@@ -49,7 +49,6 @@ BERKELIUM
 ├── 14-DISTRIBUTED-TRAINING
 └── 15-DEVELOPMENT-RESEARCH
 
-Bro, since the repo is brand new, don’t write a 10-page README yet. 😂
 
 I’d make the README establish what Berkelium is, what it is intended to become, and the architecture — without pretending everything is already implemented.
 
