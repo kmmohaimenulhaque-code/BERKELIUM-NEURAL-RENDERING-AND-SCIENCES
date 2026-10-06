@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# generated data and artifacts never go into git — manifests do
+/out/
+/artifacts/
+/datasets/generated/
+/training/runs/
+*.safetensors
