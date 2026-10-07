@@ -5,23 +5,17 @@ from __future__ import annotations
 import re
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 
+from .._base import Id, Strict  # noqa: F401  (re-exported)
 from ..units import Quantity, UnitError, parse_unit
 
 SCHEMA_VERSION = "0.1.0"
 
-Id = Annotated[str, Field(pattern=r"^[A-Za-z_][A-Za-z0-9_\-]{0,63}$", description="Stable node id")]
 # "component.port" or "component" reference
 Ref = Annotated[str, Field(pattern=r"^[A-Za-z_][A-Za-z0-9_\-]{0,63}(\.[A-Za-z_][A-Za-z0-9_\-]{0,63})*$")]
 
 _AUTHOR_RE = re.compile(r"^(user|system|llm:[^\s@]+(@[^\s]+)?|cem:[a-z0-9_.]+@\d+\.\d+(\.\d+)?)$")
-
-
-class Strict(BaseModel):
-    """Base for all canonical models: unknown fields are rejected (authority separation, ADR-001)."""
-
-    model_config = ConfigDict(extra="forbid", frozen=False, populate_by_name=True)
 
 
 class QuantityModel(Strict):

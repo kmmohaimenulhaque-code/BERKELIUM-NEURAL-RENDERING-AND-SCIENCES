@@ -17,7 +17,7 @@ from typing import Annotated, Any, ClassVar, Literal
 
 from pydantic import Field, model_validator
 
-from ..schema.common import Id, Strict
+from .._base import Id, Strict
 
 Scalar = float | str  # number or expression string
 Vec2 = Annotated[list[Scalar], Field(min_length=2, max_length=2)]
@@ -254,9 +254,26 @@ class LinearPattern(OpBase):
         return {self.input: "solid"}
 
 
+# ---------------------------------------------------------------- fields (implicit / SDF foundation)
+class ImplicitField(OpBase):
+    """Solid { p : f(p) <= 0 } for a signed-distance-like field ``expr`` over x, y, z (mm, plain
+    numbers — unit annotations are not allowed in field expressions), sampled inside ``bounds``.
+    Requires a field-capable backend; the result is a level-set mesh whose tolerance is the voxel edge.
+    It can never be converted to exact BREP (architecture §5.2 planner rule)."""
+
+    op: Literal["implicit"] = "implicit"
+    expr: str
+    bounds_min: Vec3
+    bounds_max: Vec3
+    voxel: Annotated[float, Field(gt=0)] = 1.0
+    requires: ClassVar[Representation] = "field"
+
+
+
 Op = Annotated[
     Box | Cylinder | Cone | Sphere | Torus | Profile | CircleProfile | Extrude | Revolve
-    | Union | Difference | Intersection | Translate | Rotate | Mirror | PolarPattern | LinearPattern,
+    | Union | Difference | Intersection | Translate | Rotate | Mirror | PolarPattern | LinearPattern
+    | ImplicitField,
     Field(discriminator="op"),
 ]
 
@@ -344,7 +361,7 @@ class GeometryGraph(Strict):
                     walk(x)
 
         for o in self.ops:
-            d = o.model_dump(exclude={"id", "tags", "op", "profile", "input", "inputs", "base", "tools"})
+            d = o.model_dump(exclude={"id", "tags", "op", "profile", "input", "inputs", "base", "tools", "expr"})
             for k, v in d.items():
                 if k == "kind":
                     continue
@@ -404,10 +421,11 @@ class GeometryGraph(Strict):
         raw = self.model_dump()
         for op in raw["ops"]:
             for k in list(op.keys()):
-                if k in ("id", "tags", "op", "profile", "input", "inputs", "base", "tools", "count"):
+                if k in ("id", "tags", "op", "profile", "input", "inputs", "base", "tools", "count", "expr"):
                     continue
                 op[k] = conv(k, op[k])
         return GeometryGraph.model_validate(raw)
 
     def is_resolved(self) -> bool:
         return not self.expressions()
+
