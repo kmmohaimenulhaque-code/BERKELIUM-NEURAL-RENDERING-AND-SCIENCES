@@ -1,0 +1,99 @@
+{
+  "always_highest|memory=False": {
+    "tasks": 240,
+    "mean_return": 0.5,
+    "mean_cost": 1000.0,
+    "outcomes": {
+      "correct": 230,
+      "honest_abstention": 10
+    }
+  },
+  "cheapest_sufficient|memory=False": {
+    "tasks": 240,
+    "mean_return": 0.5,
+    "mean_cost": 1001.0,
+    "outcomes": {
+      "correct": 230,
+      "honest_abstention": 10
+    }
+  },
+  "overconfident|memory=False": {
+    "tasks": 240,
+    "mean_return": -1.0,
+    "mean_cost": 1.0,
+    "outcomes": {
+      "ungrounded": 240
+    }
+  },
+  "always_highest|memory=True": {
+    "tasks": 240,
+    "mean_return": 0.5,
+    "mean_cost": 1000.0,
+    "outcomes": {
+      "correct": 230,
+      "honest_abstention": 10
+    }
+  },
+  "cheapest_sufficient|memory=True": {
+    "tasks": 240,
+    "mean_return": 0.643318750000001,
+    "mean_cost": 715.2,
+    "outcomes": {
+      "correct": 230,
+      "honest_abstention": 10
+    }
+  },
+  "overconfident|memory=True": {
+    "tasks": 240,
+    "mean_return": -1.0,
+    "mean_cost": 1.0,
+    "outcomes": {
+      "ungrounded": 240
+    }
+  },
+  "truth_distribution": {
+    "pass": 115,
+    "fail": 115,
+    "insufficient_evidence": 10
+  },
+  "trajectories": {
+    "file": "docs/experiments/trajectories_e4.jsonl",
+    "episodes": 1440
+  },
+  "cheapest_sufficient_by_split": {
+    "cheapest_sufficient|mem=False|discovery_data": {
+      "n": 180,
+      "mean_cost": 1001.0,
+      "outcomes": {
+        "correct": 170,
+        "honest_abstention": 10
+      }
+    },
+    "cheapest_sufficient|mem=False|fresh": {
+      "n": 60,
+      "mean_cost": 1001.0,
+      "outcomes": {
+        "correct": 60
+      }
+    },
+    "cheapest_sufficient|mem=True|discovery_data": {
+      "n": 180,
+      "mean_cost": 730.3777777777777,
+      "outcomes": {
+        "correct": 170,
+        "honest_abstention": 10
+      }
+    },
+    "cheapest_sufficient|mem=True|fresh": {
+      "n": 60,
+      "mean_cost": 669.6666666666666,
+      "outcomes": {
+        "correct": 60
+      }
+    }
+  },
+  "overconfident_correct_by_luck": {
+    "True": 206,
+    "False": 34
+  }
+}

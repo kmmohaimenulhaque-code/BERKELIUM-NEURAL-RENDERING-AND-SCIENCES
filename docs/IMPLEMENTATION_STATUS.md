@@ -42,6 +42,12 @@ computed discretisation-error band) · **not_evaluated** · **unsupported** · *
 Domain-max von Mises at quadrature points converged in the Lame case (p = 1.80) but is a weak QoI: at re-entrant
 corners (clamped beam root) it is singular and the GCI study correctly reports `non_converged`.
 
+## Agentic environment (ADR-022) — experimental
+| Area | Module | Status |
+|---|---|---|
+| ClaimEnv, reward claimenv-r1, baseline policies, GatewayPolicy (LLM) | `berkelium.agent` | implemented, tested; LLM policy **not evaluated** (needs endpoint) |
+| Experiment E4 + 1440 labelled trajectories | `scripts/agent_experiment.py` | run; results committed |
+
 ## Engineering memory + discovery (ADR-021) — experimental
 | Area | Module | Status |
 |---|---|---|

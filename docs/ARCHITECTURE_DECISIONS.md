@@ -199,3 +199,26 @@ declare is itself knowledge the system does not yet discover.
 **Next abstraction.** Put the LLM inside the loop as hypothesis generator (relations, limits, decompositions)
 with the core as falsifier; record agent trajectories (accepted AND falsified) as training data; discover
 dimensionless structure for multi-quantity / multi-domain relations.
+
+### ADR-022 — ClaimEnv: an agentic engineering environment whose reward requires grounding — Accepted (experimental)
+**Hypothesis.** To learn HOW to engineer (not how to describe engineering), a policy must act through evidence
+tools and be rewarded for grounded decisions, not for matching answers. An answer-matching metric cannot tell a
+grounded engineer from a fluent guesser.
+**Design.** `berkelium.agent`: `ClaimEnv` (observation = claim, design point in SI with dimension vectors, tool
+catalogue with fidelity/cost/validity, gathered evidence; actions = evaluate(tool) | declare(verdict); reward
+version `claimenv-r1`: grounded correct +1 - cost term; ungrounded pass/fail -1 even if correct; wrong grounded -2;
+lazy abstention -0.5; justified abstention +0.5). Baselines: AlwaysHighest, CheapestSufficient (the evidence
+calculus as a policy), Overconfident (declares from a point estimate). `GatewayPolicy` lets Qwen act via the
+model gateway (JSON actions) — implemented, NOT yet run (no endpoint here).
+**Experiment E4** (`scripts/agent_experiment.py` -> `agent_e4.json`, `trajectories_e4.jsonl`): 240 tasks = 40
+verified FEM points x 6 claim margins (0.3-3 %); truth = verified FEM verdict (115 pass, 115 fail, 10 undecidable).
+**Evidence.** Overconfident: return -1.0 on all 240 although its verdict was correct in 206 (86 %) — an
+accuracy-only benchmark would have scored it 86 %. Grounded policies: 230 correct, 10 honest abstentions, 0 wrong.
+Knowledge promoted into memory by E3 (the discovered relation, rebuilt from its memory record) cut
+CheapestSufficient's mean cost 1001 -> 715 overall, and 1001 -> 670 (-33 %) on the 60 tasks at the 10 points NOT
+used for discovery, with identical (all-correct) outcomes there.
+**Limitations.** One quantity; scripted policies; reward weights are policy choices; tasks share one geometry
+family; no LLM policy measured yet; truth inherits FEM discretisation error (handled by the 10 undecidable tasks).
+**Next.** Run GatewayPolicy (base Qwen3-32B vs Berkelium LoRA) on ClaimEnv; use trajectories_e4.jsonl for SFT and
+(preferred, rejected) pairs from grounded vs ungrounded episodes for preference optimisation; add law-network
+construction actions so the agent must also BUILD the model it then verifies.
