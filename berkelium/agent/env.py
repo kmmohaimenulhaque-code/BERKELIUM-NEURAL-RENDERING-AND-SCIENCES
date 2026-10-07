@@ -52,7 +52,7 @@ class ClaimEnv:
                 "point": {k: {"si": v.si, "dim_LMTIONJ": list(v.dim)} for k, v in sorted(t.point.items())},
                 "tools": [{"id": x.id, "fidelity": x.fidelity, "cost": x.cost, "validity": x.validity}
                           for x in t.tools if x.quantity == t.claim.quantity],
-                "evidence": self.evidence, "steps_left": self.budget - self.steps}
+                "evidence": [dict(e) for e in self.evidence], "steps_left": self.budget - self.steps}
 
     def _decisive(self) -> set[str]:
         out = set()

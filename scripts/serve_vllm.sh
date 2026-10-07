@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Serve Qwen3-32B (+ optional Berkelium LoRA adapter dir) on the MI300X, OpenAI-compatible API on :8000.
 #   scripts/serve_vllm.sh                                   # base model, served as Qwen/Qwen3-32B
-#   scripts/serve_vllm.sh training/runs/qwen3-32b-lora      # base + adapter, adapter served as "berkelium"
+#   scripts/serve_vllm.sh training/runs/qwen3-32b-lora      # base + adapter, served as "berkelium"
+#   ADAPTER_NAME=agent scripts/serve_vllm.sh training/runs/qwen3-32b-lora-agent-v1   # served as "agent"
 # Wait for readiness with:  berkelium model-check --wait 1800
 # Env: VLLM_MODE=auto|venv|path|docker  VLLM_VENV=.venv-vllm  VLLM_IMAGE=vllm/vllm-openai-rocm:<tag>
 #      MODEL=Qwen/Qwen3-32B  PORT=8000  GPU_UTIL=0.90  MAX_LEN=16384
@@ -14,7 +15,7 @@ ARGS=("$MODEL" --dtype bfloat16 --max-model-len "$MAX_LEN" --port "$PORT" --seed
       --gpu-memory-utilization "$GPU_UTIL" --host 127.0.0.1)
 if [[ -n "$ADAPTER" ]]; then
   [[ -f "$ADAPTER/adapter_config.json" ]] || { echo "no adapter_config.json in $ADAPTER" >&2; exit 2; }
-  ARGS+=(--enable-lora --max-lora-rank 16 --lora-modules "berkelium=$ADAPTER")
+  ARGS+=(--enable-lora --max-lora-rank 16 --lora-modules "${ADAPTER_NAME:-berkelium}=$ADAPTER")
 fi
 if [[ "$MODE" == auto ]]; then
   if [[ -x "$VENV/bin/vllm" ]]; then MODE=venv
@@ -35,7 +36,7 @@ case "$MODE" in
     MOUNTS=(-v "$HOME/.cache/huggingface:/root/.cache/huggingface")
     if [[ -n "$ADAPTER" ]]; then
       ABS="$(cd "$ADAPTER" && pwd)"; MOUNTS+=(-v "$ABS:/adapter:ro")
-      ARGS=("${ARGS[@]/berkelium=$ADAPTER/berkelium=/adapter}")
+      ARGS=("${ARGS[@]/=$ADAPTER/=/adapter}")
     fi
     ARGS=("${ARGS[@]/127.0.0.1/0.0.0.0}")
     exec docker run --rm --network host --ipc host --device /dev/kfd --device /dev/dri --group-add video \

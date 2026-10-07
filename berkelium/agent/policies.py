@@ -66,17 +66,24 @@ class GatewayPolicy:
               '"pass"|"fail"|"insufficient_evidence"}.')
 
     def __init__(self, provider=None):
-        from ..ai.gateway import provider_from_env
+        from ..ai.gateway import DecodingConfig, provider_from_env
         self.p = provider or provider_from_env()
+        self.decoding = DecodingConfig(temperature=0.0, top_p=1.0, top_k=20, max_tokens=200, seed=0)
+        self.name = f"llm:{getattr(self.p, 'model', 'model')}"
 
     def act(self, obs):
         from ..ai.orchestrator import extract_json
-        g = self.p.generate([{"role": "system", "content": self.SYSTEM},
-                             {"role": "user", "content": json.dumps(obs, default=str)}], None, None)
+        g = self.p.generate(messages(obs), None, self.decoding)
         try:
             return extract_json(g.text)
         except ValueError:
             return {"type": "invalid"}
+
+
+def messages(obs: dict) -> list[dict]:
+    """The EXACT prompt format used at inference AND by the training-data builder (sorted keys)."""
+    return [{"role": "system", "content": GatewayPolicy.SYSTEM},
+            {"role": "user", "content": json.dumps(obs, default=str, sort_keys=True)}]
 
 
 def _declare(obs, e):

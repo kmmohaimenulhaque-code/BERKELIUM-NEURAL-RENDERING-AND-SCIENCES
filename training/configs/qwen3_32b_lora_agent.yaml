@@ -1,0 +1,28 @@
+# NEW versioned adapter: Qwen3-32B bf16 LoRA on verified ClaimEnv trajectories (ADR-022). Does NOT touch the M1 adapter.
+model: Qwen/Qwen3-32B
+revision: main
+dtype: bfloat16
+attn_implementation: sdpa
+gradient_checkpointing: true
+max_length: 2048
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+train:
+  epochs: 3
+  per_device_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-4
+  lr_scheduler: cosine
+  warmup_ratio: 0.05
+  weight_decay: 0.0
+  logging_steps: 5
+  eval_steps: 25
+  save_steps: 50
+  seed: 0
+data:
+  train: out/agent/train.chat.jsonl
+  val: out/agent/val.chat.jsonl
+output_dir: training/runs/qwen3-32b-lora-agent-v1

@@ -63,7 +63,8 @@ def tasks(with_memory: bool):
             lo, hi = v["delta_mm"] - v["err_mm"], v["delta_mm"] + v["err_mm"]
             truth = c.judge((lo, hi))
             truth = truth if truth != "indeterminate" else "insufficient_evidence"
-            out.append(Task(f"beam_s{s}_a{a}_nu{nu}_m{m}", c, p, ts, truth, family=f"nu={nu}"))
+            out.append(Task(f"beam_s{s}_a{a}_nu{nu}_m{m}", c, p, ts, truth,
+                            family="train" if nu in (0.2, 0.4) else "heldout"))
     return out
 
 
@@ -86,6 +87,32 @@ def main():
             rep[f"{pol.name}|memory={mem}"] = {"tasks": n, "mean_return": agg["return"] / n,
                                                "mean_cost": agg["cost"] / n, "outcomes": dict(outcomes)}
     traj_path.write_text("\n".join(lines) + "\n")
+    # in-sample vs unseen: the discovery experiment used DOE points (s in {5,7,10,14,20}, nu in {.2,.3,.4})
+    split = defaultdict(lambda: [0, 0.0, defaultdict(int)])
+    for ln in lines:
+        e = json.loads(ln)
+        if e["policy"] != "cheapest_sufficient" or not e["memory"]:
+            continue
+        pt = e["task"].split("_")
+        unseen = not (float(pt[1][1:]) in (5, 7, 10, 14, 20) and float(pt[3][2:]) in (0.2, 0.3, 0.4))
+        k = "unseen_points" if unseen else "discovery_points"
+        split[k][0] += 1
+        split[k][1] += e["cost"]
+        split[k][2][e["outcome"]] += 1
+    base = defaultdict(lambda: [0, 0.0])
+    for ln in lines:
+        e = json.loads(ln)
+        if e["policy"] == "cheapest_sufficient" and not e["memory"]:
+            pt = e["task"].split("_")
+            unseen = not (float(pt[1][1:]) in (5, 7, 10, 14, 20) and float(pt[3][2:]) in (0.2, 0.3, 0.4))
+            base["unseen_points" if unseen else "discovery_points"][0] += 1
+            base["unseen_points" if unseen else "discovery_points"][1] += e["cost"]
+    rep["cheapest_sufficient_split"] = {k: {"n": v[0], "mean_cost_with_memory": v[1] / v[0],
+                                             "mean_cost_without_memory": base[k][1] / base[k][0],
+                                             "outcomes": dict(v[2])} for k, v in split.items()}
+    rep["overconfident_correct_by_luck"] = sum(
+        json.loads(ln)["trajectory"][-1]["info"].get("correct_by_luck", False) is True for ln in lines
+        if json.loads(ln)["policy"] == "overconfident" and json.loads(ln)["memory"])
     rep["truth_distribution"] = dict(__import__("collections").Counter(t.truth for t in tasks(True)))
     rep["trajectories"] = {"file": str(traj_path), "episodes": len(lines)}
     Path("docs/experiments/agent_e4.json").write_text(json.dumps(rep, indent=2) + "\n")

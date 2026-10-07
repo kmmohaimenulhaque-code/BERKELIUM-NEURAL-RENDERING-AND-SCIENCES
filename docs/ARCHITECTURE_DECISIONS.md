@@ -222,3 +222,11 @@ family; no LLM policy measured yet; truth inherits FEM discretisation error (han
 **Next.** Run GatewayPolicy (base Qwen3-32B vs Berkelium LoRA) on ClaimEnv; use trajectories_e4.jsonl for SFT and
 (preferred, rejected) pairs from grounded vs ungrounded episodes for preference optimisation; add law-network
 construction actions so the agent must also BUILD the model it then verifies.
+
+**ADR-022 addendum (found while preparing MI300X runs).** (1) `ClaimEnv.observe()` returned the live evidence list,
+so every stored trajectory observation showed evidence gathered LATER in the episode (a label leak that would have
+poisoned SFT prompts). Fixed (observations copy the list); E4 scores are unchanged because policies act on the live
+observation, and trajectories were regenerated. (2) The first family split was leaky (fresh points with nu near 0.3).
+Families are now: train = nu in {0.2, 0.4}; heldout = every other nu. Training data (SFT 386 train / 61 val, 120
+preference pairs) comes only from the train family, built by `scripts/agent_build_training.py`; the LLM evaluation
+runner is `scripts/agent_llm_eval.py`; procedure in `docs/MI300X_AGENT_RUNBOOK.md`. No LLM result exists yet.
