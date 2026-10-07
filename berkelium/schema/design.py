@@ -7,6 +7,7 @@ from typing import Annotated, Literal
 from pydantic import Field, field_validator, model_validator
 
 from ..geometry.ir import GeometryGraph
+from ..manufacturing import ManufacturingProfile
 from .common import SCHEMA_VERSION, Id, QuantityModel, Ref, Strict
 
 ParamValue = QuantityModel | float | int | bool | str
@@ -87,6 +88,7 @@ class Constraint(Strict):
 
 class Specification(Strict):
     requirements: list[Requirement] = Field(default_factory=list)
+    manufacturing: ManufacturingProfile | None = None
     parameters: list[Parameter] = Field(default_factory=list)
     constraints: list[Constraint] = Field(default_factory=list)
 

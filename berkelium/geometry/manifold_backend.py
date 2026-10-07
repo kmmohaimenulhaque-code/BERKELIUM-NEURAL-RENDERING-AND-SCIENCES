@@ -19,6 +19,7 @@ from .backend import (
     UnsupportedOperation,
     check_capabilities,
 )
+from .curves import spline_points
 from .ir import (
     ArcSeg,
     Box,
@@ -184,8 +185,10 @@ class ManifoldBackend:
                 case ArcSeg(through=th, to=to):
                     pts.extend(self._arc_points(cur, (float(th[0]), float(th[1])), (float(to[0]), float(to[1])), o.id))
                 case SplineSeg(points=sp):
-                    pts.extend((float(p[0]), float(p[1])) for p in sp)
-                    notes.append(f"{o.id}: spline segment meshed as polyline through its {len(sp)} control points")
+                    dense = spline_points([cur] + [(float(p[0]), float(p[1])) for p in sp])
+                    pts.extend(dense[1:])
+                    notes.append(f"{o.id}: spline meshed as a polyline through {len(dense)} points of its "
+                                 "defining curve")
         if math.dist(pts[0], pts[-1]) > 1e-6:
             raise OperationFailed("profile is not closed (last point != start)", o.id)
         poly = np.asarray(pts[:-1], dtype=float)
@@ -240,6 +243,10 @@ class ManifoldBackend:
             closed=True, valid=str(m.status()) in ("Error.NoError", "NoError"), genus=int(m.genus()),
             tolerance_mm=self.tol, extra={"n_triangles": int(m.num_tri()), "n_vertices": int(m.num_vert())},
         )
+
+    def intersection_volume(self, a, b) -> float:
+        c = a ^ b
+        return 0.0 if c.is_empty() else float(c.volume())
 
     def export(self, m, fmt: str) -> tuple[bytes, bool, float]:
         if fmt not in ("stl", "glb"):

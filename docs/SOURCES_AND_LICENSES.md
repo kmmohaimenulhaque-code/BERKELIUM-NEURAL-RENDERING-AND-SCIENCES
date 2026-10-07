@@ -47,3 +47,31 @@ Status key — **Studied**: read for architecture/API understanding only. **Depe
 ## Action items
 1. Both team repos need a LICENSE before external contributors or any reuse decisions.
 2. Re-verify manifold3d, OpenVDB and Qwen3 licenses from primary sources when they become actual dependencies.
+
+## Engineering formula sources (implemented in `berkelium/cem/library/gear/formulas.py`)
+
+Formulas are re-implemented from these references; no text or code is copied. Numeric oracle tests are in
+`tests/test_gear_formulas.py`.
+
+| Source | Used for | Status / notes |
+|---|---|---|
+| KHK Gear Technical Reference (KHK Co.) | inv α (Eq. 3.2), z_min = 2/sin²α (Eq. 3.9), x_min (Eq. 3.10), working pressure angle, centre distance, y, inverse calculation (Table 4.4), transverse contact ratio | Studied; formulas re-implemented. Oracle: m3, z 12/24, x 0.6/0.36 → α_w 26.0886°, a 56.4999 mm |
+| Budynas & Nisbett, *Shigley's Mechanical Engineering Design*, 8th ed., McGraw-Hill | Eqs. 13-10…13-13 (interference limits), 14-4…14-8 (Barth K_v, Lewis), Table 14-2 (Lewis Y, 20° FD, 25 values re-keyed with citation), §14-1 (face width 3p–5p, CR ≈ 1.5), basic rack 1.0/1.25/0.300 m | Studied. Lewis = preliminary only; Y table used only for x = 0, 12–400 teeth, else `not_evaluated` |
+| ANSI/AGMA 2001-D04 | K_v ≥ 1 convention only | Rating NOT implemented → `not_evaluated` |
+| ISO 53 / 21771 / 6336 | — | Not purchased; no ISO values used |
+| Line-of-action / rack-generation geometry | involute interference margin, fillet-contact check, root clearance, trochoid fillet by rack simulation | Derived (no constants); verified numerically (exact involute to 1e-12) |
+
+Unverified/unsourced thresholds deliberately NOT used: contact ratio ≥1.2/1.4, "practical" 14-tooth undercut limit,
+ISO 0.38 m rack tip radius, backlash formulas (backlash is a designer-chosen thinning parameter).
+
+## Dependencies now in use
+
+| Package | Version tested | License | Use |
+|---|---|---|---|
+| pydantic | 2.13 | MIT | schemas |
+| rfc8785 | 0.1.4 | Apache-2.0 | canonical JSON hashing |
+| jsonpatch | 1.33 | BSD-3-Clause | repair patches |
+| cadquery-ocp(-novtk) | 8.0.1.1 (7.9 compatible) | Apache-2.0 bindings; OCCT LGPL-2.1 + exception (dynamic) | exact BREP, STEP |
+| manifold3d | 3.5.4 | Apache-2.0 | mesh, level sets |
+| trimesh | 5.1 | MIT | STL/GLB export |
+| numpy | 2.4 | BSD-3-Clause | numerics |

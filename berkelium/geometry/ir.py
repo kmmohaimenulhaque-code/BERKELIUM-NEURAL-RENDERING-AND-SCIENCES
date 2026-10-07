@@ -91,10 +91,9 @@ class ArcSeg(Strict):
 
 
 class SplineSeg(Strict):
-    """Interpolating cubic B-spline from the current point through ``points`` (last = end point).
-
-    ``max_deviation_mm`` is the producer's stated bound on |spline - intended curve|; backends
-    record their own approximation error separately."""
+    """Spline from the current point through ``points`` (last = end point). Semantics are fixed in
+    ``geometry.curves``: chord-length natural cubic for short point lists; dense lists are curve samples.
+    ``max_deviation_mm`` is the producer's stated bound on |samples - intended curve|."""
 
     kind: Literal["spline"] = "spline"
     points: Annotated[list[Vec2], Field(min_length=2)]
@@ -415,7 +414,7 @@ class GeometryGraph(Strict):
             if isinstance(v, list):
                 return [conv(key, x) for x in v]
             if isinstance(v, dict):
-                return {k: conv(k, x) for k, x in v.items()}
+                return {k: (x if k == "kind" else conv(k, x)) for k, x in v.items()}
             return v
 
         raw = self.model_dump()

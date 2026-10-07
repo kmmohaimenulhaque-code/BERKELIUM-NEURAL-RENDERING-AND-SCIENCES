@@ -25,6 +25,7 @@ from .backend import (
     UnsupportedOperation,
     check_capabilities,
 )
+from .curves import spline_points
 from .ir import (
     ArcSeg,
     Box,
@@ -266,7 +267,7 @@ class OCCTBackend:
                     edge = BRepBuilderAPI_MakeEdge(arc.Value()).Edge()
                     cur = [float(to[0]), float(to[1])]
                 case SplineSeg(points=pts):
-                    allp = [cur] + [[float(p[0]), float(p[1])] for p in pts]
+                    allp = spline_points([(cur[0], cur[1])] + [(float(p[0]), float(p[1])) for p in pts])
                     arr = TColgp_HArray1OfPnt(1, len(allp))
                     for k, p in enumerate(allp, 1):
                         arr.SetValue(k, _pt(p))
@@ -275,7 +276,7 @@ class OCCTBackend:
                     if not interp.IsDone():
                         raise OperationFailed("spline interpolation failed", o.id)
                     edge = BRepBuilderAPI_MakeEdge(interp.Curve()).Edge()
-                    cur = allp[-1]
+                    cur = list(allp[-1])
             wire.Add(edge)
             if not wire.IsDone():
                 raise OperationFailed("profile segments are not connected", o.id)
@@ -322,6 +323,18 @@ class OCCTBackend:
                 return False
             exp.Next()
         return any_shell
+
+    def intersection_volume(self, a, b) -> float:
+        op = BRepAlgoAPI_Common(a, b)
+        op.Build()
+        if not op.IsDone():
+            raise OperationFailed("common (intersection) failed")
+        shp = op.Shape()
+        if shp.IsNull():
+            return 0.0
+        vp = GProp_GProps()
+        BRepGProp.VolumeProperties_s(shp, vp)
+        return max(0.0, vp.Mass())
 
     # ------------------------------------------------------------------ tessellation / export
     def tessellate(self, shape, linear_deflection: float | None = None) -> tuple[np.ndarray, np.ndarray]:
