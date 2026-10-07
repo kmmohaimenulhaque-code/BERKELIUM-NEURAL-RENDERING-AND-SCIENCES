@@ -142,3 +142,34 @@ become compositions of laws + constraints, and sensitivities come for free); (b)
 (e.g. conformal-style inflation) and parameter-uncertainty propagation; (c) every Resolution persisted as
 engineering memory and reused as calibration data; (d) the LLM proposes claims, laws and decompositions —
 the calculus decides.
+
+### ADR-020 — Acausal law networks: relations are the primitive, computations are derived — Accepted (experimental)
+**Descent.** ADR-019 asked "which evidence decides a claim?" but its Laws were opaque Python callables. Underneath
+every CEM and every analytic Law is a set of *undirected relations* between dimensioned quantities. Which variable
+is computed from which is not engineering knowledge — it follows from what is known in a given problem.
+**Hypothesis.** If engineering knowledge is stored as dimension-checked acausal relations (+ validity, fidelity,
+model-form bound, references, assumptions), then sizing, checking, inversion, sensitivity, uncertainty propagation,
+constrained optimisation, specification diagnostics and cross-domain composition all come from ONE domain-free
+engine — and a new domain is added by writing relations, not code.
+**Design.** `berkelium.laws`: Var, Relation ('a == b' | 'a <= b' | 'a >= b' in the safe expression language),
+LawSet (+ compose by shared names). `solve` = bipartite matching of unknowns to equations (the structural analysis
+used by acausal modelling languages) -> Tarjan SCC block-lower-triangular order -> per block: scan + Brent with ALL
+roots found (ambiguity is reported, never silently picked) or a coupled Newton-type solve -> redundant equations
+become consistency checks (CONFLICT) -> inequalities and validity predicates checked. Partial solutions when
+underdetermined, naming the free degrees of freedom. `sensitivities` (log-log elasticities), `propagate`
+(first-order + seeded Monte Carlo), `optimise` (grid-seeded bounded Nelder-Mead with constraint penalty, reports
+active constraints), `as_law` (a LawSet becomes an Evidence-Calculus Law; unknown model-form bounds propagate as
+unknown).
+**Experiment E2** (`scripts/laws_experiment.py` -> `docs/experiments/laws_e2.json`). Four domains as pure data
+(cantilever beam, Lame thick cylinder, isentropic nozzle, insulated wall) + one cross-domain composition (rocket
+chamber = nozzle + vessel + 2 interface relations). Results in IMPLEMENTATION_STATUS.
+**Limitations.** Scalar algebraic relations only (no fields, ODE/PDE, tensors, vector quantities); scalar blocks use
+a 400-point scan (roots closer than the scan spacing can be missed); optimiser is local after a coarse grid (no
+global guarantee); Monte Carlo assumes independent Gaussian inputs; `as_law` treats each relation's model-form bound
+additively; elasticities are undefined at zero values. Relations are not yet symbolically differentiated (finite
+differences of re-solves).
+**Next abstraction.** (1) Field relations: let a Relation's term be a *discretised field functional* (an FEM QoI),
+so analytic and numerical models share one network — the solver then chooses fidelity per relation. (2) ComposedCEM:
+a LawSet + a Geometry-IR template whose parameters are network variables, registered as a CEM, replacing
+hand-written CEMs. (3) Relations as training data: (problem, known set, derived plan, diagnostics) are verified
+reasoning traces for the model.

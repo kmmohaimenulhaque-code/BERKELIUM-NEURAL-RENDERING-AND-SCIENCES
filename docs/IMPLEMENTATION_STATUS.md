@@ -42,6 +42,23 @@ computed discretisation-error band) · **not_evaluated** · **unsupported** · *
 Domain-max von Mises at quadrature points converged in the Lame case (p = 1.80) but is a weak QoI: at re-entrant
 corners (clamped beam root) it is singular and the GCI study correctly reports `non_converged`.
 
+## Acausal law networks (ADR-020) — experimental
+| Area | Module | Status |
+|---|---|---|
+| Var / Relation / LawSet / compose; structural matching + BLT; all-roots scalar solve; coupled solve; conflict, ambiguity, underdetermination, validity diagnostics; sensitivities; UQ; optimise; as_law | `berkelium.laws.core` | implemented, tested |
+| Domains as data: cantilever beam, Lame thick cylinder, isentropic nozzle, insulated wall; rocket chamber composition | `berkelium.laws.library` | implemented, tested against independent references |
+
+E2 results (references are independent of the machinery):
+nozzle A/A* (M=2, gamma=1.4) 1.687500 vs NACA 1135 1.6875; p/p0 0.127805 vs 0.1278 · eps = 1.6875 inverted -> AMBIGUOUS
+{0.3722, 2.0000}; declaring M_e >= 1 -> 2.0000 · beam minimum-mass height 11.696071 mm vs closed form 11.696071 and the
+hand-written CEM's unrounded 11.696071, active constraint = strength · elasticities of deflection
+{P 1, L 3, E -1, b -1, h -3} to 1e-9 · first-order relative sigma 0.07810 = analytic 0.07810, Monte Carlo (n=400) 0.0784 ·
+insulation thickness 31.000 mm vs closed form 31.000 · rocket chamber (1 kN, 2 MPa, gamma 1.2) solved by an automatically
+derived 17-block plan from 18 relations, of which 2 are new · Lame network sigma_vm 23.1325 MPa lies inside verified FEM
+[22.972, 23.183] MPa (no conflict); a thin-wall formula misused at ro/ri = 2 conflicts with FEM and Lame; a 50 % Poisson-
+ratio error (23.096 MPa) is NOT detectable by FEM at this precision (inside its band) — only by the exact network.
+That last result is an identifiability limit, reported as such.
+
 ## Evidence calculus (ADR-019) — experimental
 | Area | Module | Status |
 |---|---|---|

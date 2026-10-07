@@ -1,0 +1,217 @@
+{
+  "A_references": {
+    "nozzle_area_ratio_M2": {
+      "computed": 1.6875000000000002,
+      "NACA1135": 1.6875
+    },
+    "nozzle_pressure_ratio_M2": {
+      "computed": 0.12780452546295096,
+      "NACA1135": 0.1278
+    },
+    "beam_min_mass_height_mm": {
+      "computed": 11.696070952851542,
+      "closed_form": 11.696070952851468,
+      "hand_written_cem_unrounded": [
+        11.15051453664995,
+        11.696070952851468
+      ],
+      "active": [
+        "strength_req"
+      ],
+      "evaluations": 168
+    }
+  },
+  "B_inversion": {
+    "unbounded": {
+      "status": "ambiguous",
+      "roots": [
+        0.37224448620275014,
+        1.9999999999999998
+      ]
+    },
+    "supersonic_declared": {
+      "status": "solved",
+      "M_e": 2.0
+    }
+  },
+  "C_diagnostics": {
+    "underdetermined": {
+      "status": "underdetermined",
+      "msg": [
+        "underdetermined: 2 degree(s) of freedom unspecified; specify 2 of ['I', 'a', 'b', 'delta', 'h', 'mass', 'sigma'] (everything else is solved)"
+      ]
+    },
+    "inconsistent": {
+      "status": "conflict",
+      "msg": [
+        "overdetermined and inconsistent: aspect residual 1.667e-01"
+      ]
+    }
+  },
+  "D_sensitivities": {
+    "computed": {
+      "delta": {
+        "P": 1.0000000001662002,
+        "L": 3.000000000054511,
+        "E": -1.0000000001662002,
+        "b": -1.0000000001662002,
+        "h": -3.000000000054511,
+        "rho": 0.0
+      },
+      "sigma": {
+        "P": 1.0000000010543786,
+        "L": 1.0000000010543786,
+        "E": 0.0,
+        "b": -0.9999999992780217,
+        "h": -2.0000000003324003,
+        "rho": 0.0
+      }
+    },
+    "exact_delta": {
+      "P": 1,
+      "L": 3,
+      "E": -1,
+      "b": -1,
+      "h": -3
+    },
+    "exact_sigma": {
+      "P": 1,
+      "L": 1,
+      "b": -1,
+      "h": -2
+    }
+  },
+  "E_uncertainty": {
+    "rel_sigma_linear": 0.07810249676522402,
+    "rel_sigma_mc": 0.07842766686924238,
+    "analytic_first_order": 0.07810249675906654,
+    "mc_failed": 0
+  },
+  "F_rocket_chamber": {
+    "status": "solved",
+    "plan": [
+      [
+        "pressure_ratio"
+      ],
+      [
+        "area_ratio"
+      ],
+      [
+        "chamber_pressure"
+      ],
+      [
+        "exit_temperature"
+      ],
+      [
+        "exit_velocity"
+      ],
+      [
+        "thrust_matched"
+      ],
+      [
+        "choked_mass_flow"
+      ],
+      [
+        "throat_diameter"
+      ],
+      [
+        "contraction_ratio"
+      ],
+      [
+        "exit_area"
+      ],
+      [
+        "exit_diameter"
+      ],
+      [
+        "lame_hoop_inner"
+      ],
+      [
+        "mass_def"
+      ],
+      [
+        "radial_inner"
+      ],
+      [
+        "plane_strain_axial"
+      ],
+      [
+        "von_mises"
+      ],
+      [
+        "wall"
+      ]
+    ],
+    "values": {
+      "M_e": 2.537594,
+      "d_t": 21.278432,
+      "d_e": 40.325888,
+      "mdot": 0.435834,
+      "ri": 21.278432,
+      "ro": 21.80017,
+      "w": 0.521738,
+      "svm": 75.0
+    },
+    "active": [
+      "strength_req"
+    ],
+    "relations": 18,
+    "new_relations_for_composition": 2
+  },
+  "F_wall_insulation_mm": {
+    "computed": 30.999999999999982,
+    "closed_form": 31.000000000000004
+  },
+  "G_falsification": {
+    "verdict": "conflict",
+    "conflicts": [
+      [
+        "thin_wall_misused",
+        "lame_wrong_nu"
+      ],
+      [
+        "thin_wall_misused",
+        "lame_network"
+      ],
+      [
+        "thin_wall_misused",
+        "fem_lame_quarter"
+      ],
+      [
+        "lame_wrong_nu",
+        "lame_network"
+      ]
+    ],
+    "estimates": {
+      "thin_wall_misused": [
+        17.32050807568877,
+        [
+          17.32050807568877,
+          17.32050807568877
+        ]
+      ],
+      "lame_wrong_nu": [
+        23.096416268426676,
+        [
+          23.096416268426676,
+          23.096416268426676
+        ]
+      ],
+      "lame_network": [
+        23.132468763863294,
+        [
+          23.132468763863294,
+          23.132468763863294
+        ]
+      ],
+      "fem_lame_quarter": [
+        23.077505061652037,
+        [
+          22.972030154616448,
+          23.182979968687626
+        ]
+      ]
+    }
+  },
+  "seconds": 193.8
+}
