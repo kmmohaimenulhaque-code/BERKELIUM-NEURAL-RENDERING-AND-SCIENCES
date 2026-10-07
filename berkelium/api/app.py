@@ -102,7 +102,10 @@ def create_app(artifact_root: str | None = None) -> FastAPI:
             prov = provider_from_env()
         except GatewayError as e:
             raise HTTPException(503, str(e)) from None
-        s = Orchestrator(prov).design(body["intent"], max_repairs=int(body.get("max_repairs", 2)))
+        try:
+            s = Orchestrator(prov).design(body["intent"], max_repairs=int(body.get("max_repairs", 2)))
+        except GatewayError as e:
+            raise HTTPException(503, str(e)) from None
         return {"attempts": [{k: v for k, v in a.__dict__.items() if k != "raw"} for a in s.attempts],
                 "proposal": s.proposal, "record": s.record.model_dump(mode="json") if s.record else None}
 

@@ -11,7 +11,9 @@ GEAR = {"structure": {"components": [{"id": "pair", "kind": "cem", "cem": "gear.
                                       "parameters": {"module": 2, "z1": 20, "z2": 40, "face_width": 25}}]}}
 
 
-def test_api_design_lifecycle(tmp_path):
+def test_api_design_lifecycle(tmp_path, monkeypatch):
+    monkeypatch.delenv("BERKELIUM_MODEL_URL", raising=False)   # 503 path must not depend on the shell env
+    monkeypatch.delenv("BERKELIUM_MODEL", raising=False)
     c = TestClient(create_app(str(tmp_path)))
     assert c.get("/v1/schema/DesignProposal").json()["$schema"].endswith("2020-12/schema")
     assert c.get("/v1/cems").json()[0]["ref"] == "gear.spur_pair@0.1"

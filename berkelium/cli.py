@@ -1,4 +1,4 @@
-"""berkelium CLI: schemas | run | dataset | sft-render | eval | design | api"""
+"""berkelium CLI: schemas | run | dataset | sft-render | model-check | eval | design | api"""
 
 from __future__ import annotations
 
@@ -19,7 +19,10 @@ def main(argv: list[str] | None = None) -> int:
         s.add_argument(f"--n-{k}", type=int, default=d)
     s.add_argument("--no-realize", action="store_true")
     s = sub.add_parser("sft-render"); s.add_argument("--dataset", required=True); s.add_argument("--out", required=True)
+    s = sub.add_parser("model-check", help="verify BERKELIUM_MODEL_URL is up and serves BERKELIUM_MODEL")
+    s.add_argument("--wait", type=float, default=0.0, help="seconds to keep polling (vLLM load takes minutes)")
     s = sub.add_parser("eval"); s.add_argument("--dataset", required=True)
+    s.add_argument("--wait", type=float, default=0.0, help="seconds to wait for the endpoint before starting")
     s.add_argument("--splits", default="test,heldout_family"); s.add_argument("--max-repairs", type=int, default=2)
     s.add_argument("--unconstrained", action="store_true"); s.add_argument("--label", default="baseline")
     s.add_argument("--out", required=True)
@@ -56,20 +59,34 @@ def main(argv: list[str] | None = None) -> int:
             if f.exists():
                 info = render([f], Path(a.out) / f"{split}.chat.jsonl")
                 print(split, info, length_audit(info["file"]))
-    elif a.cmd in ("eval", "design"):
-        from .ai.gateway import provider_from_env
+    elif a.cmd in ("model-check", "eval", "design"):
+        from .ai.gateway import GatewayError, provider_from_env
         from .ai.orchestrator import Orchestrator
-        orch = Orchestrator(provider_from_env(), constrained=not getattr(a, "unconstrained", False))
+        try:
+            prov = provider_from_env()
+            if a.cmd != "design":
+                ids = prov.check(wait_s=getattr(a, "wait", 0.0))
+                print(f"endpoint ok: {prov.base_url} serves {ids}", file=sys.stderr)
+        except GatewayError as e:
+            print(f"model endpoint not ready: {e}", file=sys.stderr)
+            return 3
+        if a.cmd == "model-check":
+            return 0
+        orch = Orchestrator(prov, constrained=not getattr(a, "unconstrained", False))
         if a.cmd == "design":
             s_ = orch.design(a.intent, max_repairs=a.max_repairs)
             print(json.dumps({"attempts": [{k: v for k, v in x.__dict__.items() if k != "raw"} for x in s_.attempts],
                               "proposal": s_.proposal}, indent=2))
             return 0
-        from .ai.evaluate import evaluate
+        from .ai.evaluate import EndpointLost, evaluate
         from .datasets.factory import load_split
         ex = [r for sp in a.splits.split(",") if (Path(a.dataset) / f"{sp}.jsonl").exists()
               for r in load_split(Path(a.dataset) / f"{sp}.jsonl")]
-        rep = evaluate(ex, orch, max_repairs=a.max_repairs, out=a.out, label=a.label)
+        try:
+            rep = evaluate(ex, orch, max_repairs=a.max_repairs, out=a.out, label=a.label)
+        except EndpointLost as e:
+            print(f"evaluation aborted: {e}", file=sys.stderr)
+            return 3
         print(json.dumps(rep["metrics"], indent=2))
     elif a.cmd == "api":
         import uvicorn

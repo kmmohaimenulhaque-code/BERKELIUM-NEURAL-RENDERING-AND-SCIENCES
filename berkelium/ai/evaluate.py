@@ -37,15 +37,28 @@ def _gt_requirements_met(session, example) -> bool:
     return bool(rr) and all(r.status == "pass" for r in rr)
 
 
+class EndpointLost(RuntimeError):
+    """Raised when the model endpoint keeps failing: a baseline built on transport errors would be
+    recorded as a model scoring 0 %, which is a false measurement."""
+
+
 def evaluate(examples: list[dict], orch: Orchestrator, max_repairs: int = 2, out: str | Path | None = None,
-             label: str = "baseline") -> dict:
+             label: str = "baseline", max_consecutive_transport_errors: int = 3) -> dict:
     rows = []
+    consecutive = 0
     for ex in examples:
         if ex["task"] not in ("plan", "plan_procedural"):
             continue
         intent = ex["messages"][-1]["content"]
         t = time.perf_counter()
         s = orch.design(intent, max_repairs=max_repairs)
+        if any(a.transport_error for a in s.attempts):
+            consecutive += 1
+            if consecutive >= max_consecutive_transport_errors:
+                raise EndpointLost(f"{consecutive} consecutive examples hit endpoint errors; last: "
+                                   f"{next(a.error for a in s.attempts if a.transport_error)}. No report written.")
+        else:
+            consecutive = 0
         first = s.attempts[0] if s.attempts else None
         gt_cems = sorted(c.get("cem") or "procedural" for c in ex["target"]["structure"]["components"])
         got_cems = sorted(c.get("cem") or "procedural" for c in (s.proposal or {}).get("structure", {})
@@ -59,6 +72,7 @@ def evaluate(examples: list[dict], orch: Orchestrator, max_repairs: int = 2, out
             "cem_selection_correct": got_cems == gt_cems,
             "requirements_met": _gt_requirements_met(s, ex),
             "hallucinated_evaluation": any(a.hallucinated_evaluation for a in s.attempts),
+            "transport_error": any(a.transport_error for a in s.attempts),
             "seconds": round(time.perf_counter() - t, 3),
             "attempts": [a.__dict__ for a in s.attempts],
         })
@@ -73,6 +87,7 @@ def evaluate(examples: list[dict], orch: Orchestrator, max_repairs: int = 2, out
         "validation_pass_first": rate("pass_first"), "validation_pass_final": rate("pass_final"),
         "requirement_satisfaction": rate("requirements_met"), "cem_selection_accuracy": rate("cem_selection_correct"),
         "hallucinated_evaluation_rate": rate("hallucinated_evaluation"),
+        "transport_error_rate": rate("transport_error"),   # must be 0 for a valid baseline
         "repair_success": round(sum(r["pass_final"] for r in failed_first) / len(failed_first), 4)
         if failed_first else None,
         "by_split": {s: {"n": c} for s, c in Counter(r["split"] for r in rows).items()},

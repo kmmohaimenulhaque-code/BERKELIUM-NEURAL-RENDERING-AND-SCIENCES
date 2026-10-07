@@ -8,10 +8,12 @@ Providers return raw text; parsing/validation is always done by the core. Suppor
 
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Protocol
@@ -50,6 +52,21 @@ class GatewayError(RuntimeError):
     pass
 
 
+# Transport failures that must surface as GatewayError, never as a raw traceback. ConnectionResetError /
+# RemoteDisconnected are OSError / HTTPException subclasses that urllib does NOT wrap in URLError.
+_TRANSPORT_ERRORS = (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException)
+_LOOPBACK = {"localhost", "127.0.0.1", "::1", "0.0.0.0"}
+
+
+def _opener(url: str) -> urllib.request.OpenerDirector:
+    """Loopback endpoints bypass http(s)_proxy: a proxy that cannot reach the local vLLM resets the
+    connection instead of refusing it, which hides the real cause ("nothing is serving")."""
+    host = urllib.parse.urlsplit(url).hostname or ""
+    if host in _LOOPBACK:
+        return urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    return urllib.request.build_opener()
+
+
 class OpenAICompatibleProvider:
     def __init__(self, base_url: str, model: str, api_key: str | None = None, name: str = "openai_compatible",
                  timeout_s: float = 300.0, schema_mode: str = "json_schema"):
@@ -81,13 +98,48 @@ class OpenAICompatibleProvider:
                                               **({"Authorization": f"Bearer {self.api_key}"} if self.api_key else {})})
         t = time.perf_counter()
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout_s) as r:
+            with _opener(self.base_url).open(req, timeout=self.timeout_s) as r:
                 data = json.loads(r.read())
-        except (urllib.error.URLError, TimeoutError) as e:
-            raise GatewayError(f"{self.name}: {e}") from None
+        except urllib.error.HTTPError as e:
+            detail = e.read()[:500].decode("utf-8", "replace")
+            raise GatewayError(f"{self.name}: HTTP {e.code}: {detail}") from None
+        except _TRANSPORT_ERRORS as e:
+            raise GatewayError(f"{self.name}: {type(e).__name__}: {e} ({self.base_url})") from None
+        except json.JSONDecodeError as e:
+            raise GatewayError(f"{self.name}: non-JSON response: {e}") from None
+        if not data.get("choices"):
+            raise GatewayError(f"{self.name}: response has no choices: {str(data)[:300]}")
         msg = data["choices"][0]["message"]
         return Generation(text=msg.get("content") or "", model=data.get("model", self.model), provider=self.name,
                           latency_s=time.perf_counter() - t, usage=data.get("usage", {}), raw=None)
+
+
+    def served_models(self, timeout_s: float = 10.0) -> list[str]:
+        """GET {base}/models — the readiness probe (vLLM answers it only once weights are loaded)."""
+        req = urllib.request.Request(f"{self.base_url}/models", headers={
+            **({"Authorization": f"Bearer {self.api_key}"} if self.api_key else {})})
+        try:
+            with _opener(self.base_url).open(req, timeout=timeout_s) as r:
+                data = json.loads(r.read())
+        except _TRANSPORT_ERRORS + (json.JSONDecodeError,) as e:
+            raise GatewayError(f"{self.name}: {type(e).__name__}: {e} ({self.base_url})") from None
+        return [m.get("id", "") for m in data.get("data", [])]
+
+    def check(self, wait_s: float = 0.0, interval_s: float = 10.0) -> list[str]:
+        """Raise GatewayError unless the endpoint is up AND serves self.model. Optionally poll up to wait_s."""
+        if os.environ.get("BERKELIUM_SKIP_MODEL_CHECK") == "1":   # hosted APIs that don't list models
+            return [self.model]
+        deadline = time.monotonic() + wait_s
+        while True:
+            try:
+                ids = self.served_models()
+                if self.model not in ids:
+                    raise GatewayError(f"{self.name}: endpoint up but does not serve {self.model!r}; serves {ids}")
+                return ids
+            except GatewayError:
+                if time.monotonic() >= deadline:
+                    raise
+                time.sleep(interval_s)
 
 
 class ReplayProvider:

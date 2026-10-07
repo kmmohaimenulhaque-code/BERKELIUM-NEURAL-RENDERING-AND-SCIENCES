@@ -53,6 +53,7 @@ class Attempt:
     summary: str | None
     error: str | None = None
     hallucinated_evaluation: bool = False
+    transport_error: bool = False   # endpoint unreachable/failed — not a model-quality failure
 
 
 @dataclass
@@ -94,7 +95,7 @@ class Orchestrator:
         try:
             g = self.p.generate(plan_messages(intent, self.reg), self.schema, self.decoding)
         except GatewayError as e:
-            sess.attempts.append(Attempt("plan", "", False, False, None, str(e)))
+            sess.attempts.append(Attempt("plan", "", False, False, None, str(e), transport_error=True))
             return sess
         try:
             obj = extract_json(g.text)
@@ -107,13 +108,15 @@ class Orchestrator:
             if sess.proposal is None:
                 break  # schema-invalid plans are not repairable by patch (no base document)
             digest = report_digest(sess.record)
+            g = None   # never attribute the previous attempt's text to a failed repair call
             try:
                 g = self.p.generate(repair_messages(sess.proposal, digest), None, self.decoding)
                 patch = extract_json(g.text)
                 patched = jsonpatch.apply_patch(copy.deepcopy(sess.proposal), patch)
             except (GatewayError, ValueError, jsonpatch.JsonPatchException, jsonpatch.JsonPointerException,
                     TypeError) as e:
-                sess.attempts.append(Attempt("repair", getattr(g, "text", ""), False, False, None, str(e)))
+                sess.attempts.append(Attempt("repair", getattr(g, "text", ""), False, False, None, str(e),
+                                             transport_error=isinstance(e, GatewayError)))
                 continue
             if self._evaluate(patched, "repair", g.text, sess):
                 break
