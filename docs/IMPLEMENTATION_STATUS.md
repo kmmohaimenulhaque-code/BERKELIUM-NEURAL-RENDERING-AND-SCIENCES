@@ -42,6 +42,21 @@ computed discretisation-error band) · **not_evaluated** · **unsupported** · *
 Domain-max von Mises at quadrature points converged in the Lame case (p = 1.80) but is a weak QoI: at re-entrant
 corners (clamped beam root) it is singular and the GCI study correctly reports `non_converged`.
 
+## Evidence calculus (ADR-019) — experimental
+| Area | Module | Status |
+|---|---|---|
+| Law / Claim / Est / Resolution, resolve (escalation, out-of-domain skip, conflict detection), calibrate | `berkelium.evidence.core` | implemented, tested (synthetic laws + real FEM) |
+| Beam laws (Euler-Bernoulli, Timoshenko, FEM-P2-GCI); pipe laws (Hagen-Poiseuille, Colebrook) | `berkelium.evidence.library` | implemented, tested |
+| Experiment E1 | `scripts/evidence_experiment.py` | run; results committed (`docs/experiments/evidence_e1.json`) |
+
+E1 numbers (E = 200 GPa, nu = 0.3, P = 500 N, L = 200 mm, h/b = 2, limit 1.0 mm):
+calibration of Euler-Bernoulli vs FEM on 8 beams (L/h 6..20, h/b 1..2) -> learned relative bound 1.394 %;
+minimum height 20.0781 mm from BOTH FEM-only bisection (9 FEM runs) and evidence-resolved bisection (2 FEM runs:
+one straddle escalation + final verification). Including calibration, one search costs 10 vs 9 FEM runs; k reused
+searches cost 8 + 2k vs 9k. Falsification probes: contradicting measurement -> conflict; law with a 25 % bug ->
+conflict; L/h = 2.9 -> EB skipped (outside validity), FEM decides. Pipe: laminar -> Hagen-Poiseuille, turbulent ->
+Colebrook, transitional -> insufficient_evidence.
+
 ## M1 foundation
 | Area | Module | Status |
 |---|---|---|

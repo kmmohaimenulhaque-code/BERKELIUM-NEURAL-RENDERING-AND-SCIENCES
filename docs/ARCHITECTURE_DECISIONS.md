@@ -117,3 +117,28 @@ expression language, mm) over facet vertices and normals — never to mesher fac
 mesher/backend, survives remeshing and refinement (required for GCI), is model-proposable and diffable, and
 reuses the implicit-geometry convention (f <= 0 is inside). Vertices, not centroids, because centroids of curved
 faces sag inside the surface by ~h^2/8R (this broke the first radial-conduction run).
+
+### ADR-019 — The Evidence Calculus: claims resolved over a hierarchy of executable laws — Accepted (experimental)
+**Hypothesis.** Analytic formulas, correlations, FEM/CFD, surrogates and measurements are one kind of object:
+an evidence source mapping a design point to an interval-valued estimate, valid only inside a declared domain,
+at a declared cost. Engineering questions are claims; deciding one is search over evidence. Multi-fidelity,
+capability reasoning, falsification and experiment-awareness then need no per-domain machinery.
+**Design.** `berkelium.evidence`: `Law` (typed executable model + dimension-checked validity predicates in the
+safe expression language + named dimensionless groups + cost + fidelity), `Claim`, `Est` (interval; unknown
+model-form error = corroboration only), `resolve` (cheapest decisive source; escalate on straddle; skip and
+record out-of-domain; any two disjoint known intervals = CONFLICT, never a decision), `calibrate`/`calibrated`
+(a cheap law's model-form bound learned from verified high-fidelity runs, valid only inside the sampled box).
+**Experiment E1** (`scripts/evidence_experiment.py` -> `docs/experiments/evidence_e1.json`, deterministic):
+see IMPLEMENTATION_STATUS. **Evidence.** Same minimum design from FEM-only and evidence-resolved search;
+conflicts detected for a contradicting measurement and a deliberately mis-implemented law; out-of-domain
+points escalate; transitional pipe flow returns insufficient_evidence; the pipe domain needed zero new
+resolution code. **Limitations.** (1) The learned bound is an empirical max over n=8 samples — not a
+statistical guarantee; final designs must still be verified at the reference fidelity (E1 does this).
+(2) Calibration cost is amortised only across reuse: one search alone costs more (8 + 2 vs 9 FEM runs).
+(3) Intervals are worst-case sums; no probabilistic propagation of parameter uncertainty yet. (4) Laws are
+Python callables; their *formulas* are not yet symbolic objects that can be composed or differentiated.
+**Next abstraction.** (a) Laws as symbolic, composable equation objects in the expression language (so CEMs
+become compositions of laws + constraints, and sensitivities come for free); (b) sample-size-aware bounds
+(e.g. conformal-style inflation) and parameter-uncertainty propagation; (c) every Resolution persisted as
+engineering memory and reused as calibration data; (d) the LLM proposes claims, laws and decompositions —
+the calculus decides.

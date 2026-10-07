@@ -1,0 +1,208 @@
+{
+  "A_calibration": {
+    "n": 8,
+    "box": {
+      "slenderness": [
+        5.999999999999999,
+        20.0
+      ],
+      "aspect": [
+        1.0,
+        2.0
+      ],
+      "poisson": [
+        0.3,
+        0.3
+      ]
+    },
+    "rel_bound": 0.013943756823240694,
+    "samples": [
+      [
+        5.999999999999999,
+        1.0,
+        0.3
+      ],
+      [
+        5.999999999999999,
+        2.0,
+        0.3
+      ],
+      [
+        10.0,
+        1.0,
+        0.3
+      ],
+      [
+        10.0,
+        2.0,
+        0.3
+      ],
+      [
+        15.0,
+        1.0,
+        0.3
+      ],
+      [
+        15.0,
+        2.0,
+        0.3
+      ],
+      [
+        20.0,
+        1.0,
+        0.3
+      ],
+      [
+        20.0,
+        2.0,
+        0.3
+      ]
+    ]
+  },
+  "B_search": {
+    "limit_mm": 1.0,
+    "fem_only": {
+      "h_min_mm": 20.0781,
+      "steps": [
+        {
+          "h": 20.0,
+          "verdict": "fail",
+          "decided_by": "fem_p2_gci"
+        },
+        {
+          "h": 25.0,
+          "verdict": "pass",
+          "decided_by": "fem_p2_gci"
+        },
+        {
+          "h": 22.5,
+          "verdict": "pass",
+          "decided_by": "fem_p2_gci"
+        },
+        {
+          "h": 21.25,
+          "verdict": "pass",
+          "decided_by": "fem_p2_gci"
+        },
+        {
+          "h": 20.625,
+          "verdict": "pass",
+          "decided_by": "fem_p2_gci"
+        },
+        {
+          "h": 20.3125,
+          "verdict": "pass",
+          "decided_by": "fem_p2_gci"
+        },
+        {
+          "h": 20.1562,
+          "verdict": "pass",
+          "decided_by": "fem_p2_gci"
+        },
+        {
+          "h": 20.0781,
+          "verdict": "pass",
+          "decided_by": "fem_p2_gci"
+        }
+      ],
+      "fem_runs": 9,
+      "final_verdict": "pass",
+      "final_conflicts": []
+    },
+    "evidence": {
+      "h_min_mm": 20.0781,
+      "steps": [
+        {
+          "h": 20.0,
+          "verdict": "fail",
+          "decided_by": "fem_p2_gci"
+        },
+        {
+          "h": 25.0,
+          "verdict": "pass",
+          "decided_by": "euler_bernoulli+cal"
+        },
+        {
+          "h": 22.5,
+          "verdict": "pass",
+          "decided_by": "euler_bernoulli+cal"
+        },
+        {
+          "h": 21.25,
+          "verdict": "pass",
+          "decided_by": "euler_bernoulli+cal"
+        },
+        {
+          "h": 20.625,
+          "verdict": "pass",
+          "decided_by": "euler_bernoulli+cal"
+        },
+        {
+          "h": 20.3125,
+          "verdict": "pass",
+          "decided_by": "euler_bernoulli+cal"
+        },
+        {
+          "h": 20.1562,
+          "verdict": "pass",
+          "decided_by": "euler_bernoulli+cal"
+        },
+        {
+          "h": 20.0781,
+          "verdict": "pass",
+          "decided_by": "euler_bernoulli+cal"
+        }
+      ],
+      "fem_runs": 2,
+      "final_verdict": "pass",
+      "final_conflicts": []
+    },
+    "same_answer": true,
+    "fem_runs_saved": 7
+  },
+  "C_falsification": {
+    "contradicting_measurement": {
+      "verdict": "conflict",
+      "conflicts": [
+        [
+          "lab_measurement_hypothetical",
+          "fem_p2_gci"
+        ]
+      ]
+    },
+    "mis_implemented_law": {
+      "verdict": "conflict",
+      "conflicts": [
+        [
+          "eb_with_unit_bug",
+          "fem_p2_gci"
+        ]
+      ]
+    },
+    "out_of_domain": {
+      "verdict": "pass",
+      "decided_by": "fem_p2_gci",
+      "skipped": [
+        [
+          "euler_bernoulli+cal",
+          "outside validity: slenderness >= 5"
+        ]
+      ]
+    }
+  },
+  "D_pipe": {
+    "laminar": {
+      "verdict": "pass",
+      "decided_by": "hagen_poiseuille"
+    },
+    "turbulent": {
+      "verdict": "fail",
+      "decided_by": "colebrook"
+    },
+    "transitional": {
+      "verdict": "insufficient_evidence",
+      "decided_by": null
+    }
+  },
+  "seconds": 95.9
+}
