@@ -173,3 +173,29 @@ so analytic and numerical models share one network — the solver then chooses f
 a LawSet + a Geometry-IR template whose parameters are network variables, registered as a CEM, replacing
 hand-written CEMs. (3) Relations as training data: (problem, known set, derived plan, diagnostics) are verified
 reasoning traces for the model.
+
+### ADR-021 — Engineering memory + gated relation discovery — Accepted (experimental)
+**Hypothesis.** Competence accumulates if verified computations are stored as computable records and if new
+relations can be *discovered* from them — provided promotion into knowledge is gated by independent falsification.
+**Design.** `berkelium.memory`: append-only, content-addressed records (evidence | relation | rejection |
+resolution); memoisation = memory. `berkelium.discovery`: Buckingham-Pi groups derived from units (exact rational
+nullspace); exhaustive sparse monomial regression on a TRAIN family; Occam selection on a HELD-OUT family;
+physics limit checks (declared limits falsify candidates before fitting); a Gate (held-out residual <= k x
+evidence error + tol, minimum sample sizes); promoted relations carry a validity box and a model-form bound.
+**Experiment E3** (`scripts/discovery_experiment.py`; evidence in `docs/experiments/memory_e3.jsonl`, results in
+`discovery_e3.json`): 40 verified FEM beams (train nu in {0.2, 0.4}, held out nu = 0.3, plus 10 fresh benchmark
+points). **Evidence.** (1) The data-only gate PROMOTED a law with a term that does not vanish in the slender limit —
+a physically wrong law that fits the data. Declaring the limit "Euler-Bernoulli is exact as h/L -> 0" falsified
+3534 of 4095 candidates; the promoted law is 0.6300270715359171*(h/L)^2 + -0.07530198566629838*(h/L)*(h/b)^-1 (held-out max |residual| 4.65e-03 vs
+evidence-based limit), validity box h/L in [0.05, 0.2], h/b in [1, 2], nu in [0.2, 0.4], model-form bound
+1.81%. (2) A deliberately impoverished hypothesis space was rejected by the same
+gate. (3) On 10 fresh claims set 0.3-4 % from the FEM truth: FEM runs 10 -> 6,
+verdict disagreements 0, conflicts 0. (4) At h/L = 1/3 (outside
+the box) the discovered law refuses and the claim is INSUFFICIENT_EVIDENCE without FEM.
+**Limitations.** One quantity, one geometry family; monomial library only; the gate's k and tol are policy, not
+derived; held-out family shares geometry type with training; the promoted law is a surrogate valid in its box —
+its b/L term is fitted, not explained. Data-only gates are demonstrably insufficient; which physical checks to
+declare is itself knowledge the system does not yet discover.
+**Next abstraction.** Put the LLM inside the loop as hypothesis generator (relations, limits, decompositions)
+with the core as falsifier; record agent trajectories (accepted AND falsified) as training data; discover
+dimensionless structure for multi-quantity / multi-domain relations.

@@ -1,0 +1,270 @@
+{
+  "pi_groups": [
+    {
+      "E": 1,
+      "L": 2,
+      "P": -1
+    },
+    {
+      "L": 1,
+      "b": -1
+    },
+    {
+      "L": 1,
+      "delta": -1
+    },
+    {
+      "L": 1,
+      "h": -1
+    },
+    {
+      "nu": 1
+    }
+  ],
+  "groups_used": [
+    "h/L",
+    "h/b",
+    "nu"
+  ],
+  "target": "delta_FEM / delta_EB - 1",
+  "data_only_discovery": {
+    "chosen": "0.4949584810883471*(h/L)^2 + -0.19482370306285818*(h/b)^-1*(nu)^3",
+    "heldout_max_abs": 0.0022512179481975585,
+    "slender_limit_ok": false,
+    "verdict": "would pass the data gate, but violates the slender limit (Euler-Bernoulli must become exact as h/L -> 0)"
+  },
+  "limit_check": {
+    "falsified_by_limits": 3534,
+    "fitted": 561
+  },
+  "discovery": {
+    "n_candidates": 561,
+    "chosen": "0.6300270715359171*(h/L)^2 + -0.07530198566629838*(h/L)*(h/b)^-1",
+    "complexity": 6,
+    "train_rmse": 0.0055414819593137465,
+    "heldout_max_abs": 0.004648372513694477,
+    "heldout_rmse": 0.0017669505104242408,
+    "max_heldout_evidence_err": 0.0026467840453259324,
+    "top5": [
+      [
+        "0.724764915585157*(h/L)^2 + -0.7288697896967908*(h/L)*(nu)^2",
+        0.0015816409176878184,
+        7
+      ],
+      [
+        "2.4697483634834185*(h/L)^3 + -0.04001798730304555*(h/L)*(h/b)^-2",
+        0.0015983129997444812,
+        8
+      ],
+      [
+        "3.4208980438777012*(h/L)^3 + -8.77962634629255*(h/L)^2*(nu)^3",
+        0.0017179337253267345,
+        10
+      ],
+      [
+        "2.7359806198065177*(h/L)^3 + -0.045514982897461656*(h/L)*(h/b)^-1",
+        0.001720129224434065,
+        7
+      ],
+      [
+        "0.638436400567512*(h/L)^2 + -1.6092542571597763*(h/L)*(nu)^3",
+        0.0017354977014163873,
+        8
+      ]
+    ],
+    "timoshenko_theory": "(0.6 + 0.55*nu)*(h/L)^2 (Cowper kappa)",
+    "promoted": true,
+    "gate_log": []
+  },
+  "negative_control": {
+    "candidate": "0.041707140536152265*(h/L)",
+    "promoted": false,
+    "gate_log": [
+      "held-out max |residual| 1.108e-02 > limit 5.394e-03"
+    ]
+  },
+  "promotion": {
+    "validity_box": {
+      "s": [
+        0.05,
+        0.2
+      ],
+      "a": [
+        1.0,
+        2.0
+      ],
+      "nu": [
+        0.2,
+        0.4
+      ]
+    },
+    "model_form_rel": 0.018081806164195427
+  },
+  "benchmark": {
+    "cases": [
+      {
+        "point": [
+          6.656,
+          1.237,
+          0.348
+        ],
+        "margin": 0.005,
+        "truth": "pass",
+        "before": "pass",
+        "after": "pass",
+        "after_by": "fem_p2_gci",
+        "fem_before": 1,
+        "fem_after": 1
+      },
+      {
+        "point": [
+          13.359,
+          1.094,
+          0.289
+        ],
+        "margin": -0.005,
+        "truth": "fail",
+        "before": "fail",
+        "after": "fail",
+        "after_by": "fem_p2_gci",
+        "fem_before": 1,
+        "fem_after": 1
+      },
+      {
+        "point": [
+          11.967,
+          1.16,
+          0.338
+        ],
+        "margin": 0.01,
+        "truth": "pass",
+        "before": "pass",
+        "after": "pass",
+        "after_by": "fem_p2_gci",
+        "fem_before": 1,
+        "fem_after": 1
+      },
+      {
+        "point": [
+          7.035,
+          1.391,
+          0.303
+        ],
+        "margin": -0.01,
+        "truth": "fail",
+        "before": "fail",
+        "after": "fail",
+        "after_by": "fem_p2_gci",
+        "fem_before": 1,
+        "fem_after": 1
+      },
+      {
+        "point": [
+          11.313,
+          1.587,
+          0.338
+        ],
+        "margin": 0.02,
+        "truth": "pass",
+        "before": "pass",
+        "after": "pass",
+        "after_by": "discovered_beam",
+        "fem_before": 1,
+        "fem_after": 0
+      },
+      {
+        "point": [
+          18.41,
+          1.284,
+          0.324
+        ],
+        "margin": -0.02,
+        "truth": "fail",
+        "before": "fail",
+        "after": "fail",
+        "after_by": "discovered_beam",
+        "fem_before": 1,
+        "fem_after": 0
+      },
+      {
+        "point": [
+          14.899,
+          1.293,
+          0.22
+        ],
+        "margin": 0.04,
+        "truth": "pass",
+        "before": "pass",
+        "after": "pass",
+        "after_by": "discovered_beam",
+        "fem_before": 1,
+        "fem_after": 0
+      },
+      {
+        "point": [
+          18.642,
+          1.298,
+          0.27
+        ],
+        "margin": -0.04,
+        "truth": "fail",
+        "before": "fail",
+        "after": "fail",
+        "after_by": "discovered_beam",
+        "fem_before": 1,
+        "fem_after": 0
+      },
+      {
+        "point": [
+          17.538,
+          1.585,
+          0.295
+        ],
+        "margin": 0.003,
+        "truth": "pass",
+        "before": "pass",
+        "after": "pass",
+        "after_by": "fem_p2_gci",
+        "fem_before": 1,
+        "fem_after": 1
+      },
+      {
+        "point": [
+          15.939,
+          1.03,
+          0.333
+        ],
+        "margin": -0.003,
+        "truth": "fail",
+        "before": "fail",
+        "after": "fail",
+        "after_by": "fem_p2_gci",
+        "fem_before": 1,
+        "fem_after": 1
+      }
+    ],
+    "fem_runs_before": 10,
+    "fem_runs_after": 6,
+    "verdict_disagreements": 0,
+    "conflicts_after": 0
+  },
+  "extrapolation_refused": {
+    "verdict": "insufficient_evidence",
+    "reasons": [
+      [
+        "euler_bernoulli",
+        "outside validity: L/h >= 5"
+      ],
+      [
+        "discovered_beam",
+        "outside validity: h/L <= 0.2"
+      ]
+    ]
+  },
+  "memory_records": {
+    "evidence": 40,
+    "relation": 1,
+    "rejection": 0,
+    "resolution": 0
+  }
+}

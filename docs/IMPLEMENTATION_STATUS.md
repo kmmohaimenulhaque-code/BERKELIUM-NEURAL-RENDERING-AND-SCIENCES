@@ -42,6 +42,14 @@ computed discretisation-error band) · **not_evaluated** · **unsupported** · *
 Domain-max von Mises at quadrature points converged in the Lame case (p = 1.80) but is a weak QoI: at re-entrant
 corners (clamped beam root) it is singular and the GCI study correctly reports `non_converged`.
 
+## Engineering memory + discovery (ADR-021) — experimental
+| Area | Module | Status |
+|---|---|---|
+| Content-addressed append-only memory (evidence, relation, rejection, resolution); memoisation | `berkelium.memory` | implemented, tested |
+| Buckingham-Pi groups from units; sparse monomial discovery; limit falsification; promotion gate | `berkelium.discovery` | implemented, tested (planted-law recovery, gate rejections) |
+| Experiment E3 | `scripts/discovery_experiment.py` | run; results + 40 evidence records committed |
+See `docs/AGI_ENGINEERING.md` for the capability ladder and measured position.
+
 ## Acausal law networks (ADR-020) — experimental
 | Area | Module | Status |
 |---|---|---|
