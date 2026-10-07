@@ -16,7 +16,7 @@ import hashlib
 import json
 import math
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -24,9 +24,9 @@ import jsonpatch
 import numpy as np
 
 from .. import __version__
-from ..ai.prompts import PROMPT_VERSION, plan_messages, report_digest, repair_messages
+from ..ai.prompts import PROMPT_VERSION, plan_messages, repair_messages, report_digest
 from ..cem.library.gear import formulas as F
-from ..cem.library.gear.cem import DEFAULT_CANDIDATE_MODULES, ALPHA, Parameters
+from ..cem.library.gear.cem import ALPHA, DEFAULT_CANDIDATE_MODULES, Parameters
 from ..cem.protocol import CEMRegistry, default_registry
 from ..designs.procedural import lantern_proposal
 from ..pipeline import run
@@ -178,7 +178,7 @@ def build(out_dir: str | Path, cfg: FactoryConfig | None = None, registry: CEMRe
     from .intents import gear_intent
     plan = [("valid", cfg.n_valid), ("boundary", cfg.n_boundary)]
     for mode, n in plan:
-        for i in range(n):
+        for _ in range(n):
             item_seed = int(rng.integers(0, 2**31))
             r = np.random.default_rng(item_seed)
             p = cem.sample(r, mode)
@@ -193,7 +193,7 @@ def build(out_dir: str | Path, cfg: FactoryConfig | None = None, registry: CEMRe
                 ex["verification"] = verification_block(rec, cfg.realize)
             emit(ex, ok, why)
 
-    for i in range(cfg.n_invalid):
+    for _ in range(cfg.n_invalid):
         item_seed = int(rng.integers(0, 2**31))
         r = np.random.default_rng(item_seed)
         bad = cem.sample(r, "invalid")
@@ -221,7 +221,7 @@ def build(out_dir: str | Path, cfg: FactoryConfig | None = None, registry: CEMRe
             "patched_hash": sha256_of(jsonpatch.apply_patch(copy.deepcopy(broken), ex["target"]))}
         emit(ex, True, "")
 
-    for i in range(cfg.n_procedural):
+    for _ in range(cfg.n_procedural):
         item_seed = int(rng.integers(0, 2**31))
         r = np.random.default_rng(item_seed)
         h, rad = float(np.round(r.uniform(80, 200), 1)), float(np.round(r.uniform(30, 70), 1))

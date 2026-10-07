@@ -7,8 +7,8 @@ import jsonpatch
 from berkelium.ai.evaluate import evaluate
 from berkelium.ai.gateway import OpenAICompatibleProvider, ReplayProvider
 from berkelium.ai.orchestrator import Orchestrator, extract_json
-from berkelium.datasets.factory import params_proposal, plan_target
 from berkelium.cem.library.gear.cem import Parameters
+from berkelium.datasets.factory import params_proposal, plan_target
 
 GOOD = plan_target({"ratio": 2.0, "module": {"value": 2.0, "unit": "mm"}})
 BROKEN = params_proposal(Parameters(module=2, z1=12, z2=24, face_width=25))

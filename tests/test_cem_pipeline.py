@@ -23,12 +23,12 @@ def test_generated_flank_is_exact_involute_with_correct_thickness(m, z, x):
     rb = F.base_diameter(m, z, A20) / 2
     th = [math.atan2(p[1], p[0]) for p in fl.involute]
     rr = [math.hypot(*p) for p in fl.involute]
-    for t, r in zip(th, rr):  # theta + inv(alpha_r) is constant along an involute
+    for t, r in zip(th, rr, strict=True):  # theta + inv(alpha_r) is constant along an involute
         assert t + F.inv(math.acos(rb / r)) == pytest.approx(th[0] + F.inv(math.acos(rb / rr[0])), abs=1e-12)
     assert fl.r_root == pytest.approx(F.root_diameter(m, z, x) / 2, abs=1e-9)
     assert fl.r_tip == pytest.approx(F.tip_diameter(m, z, x) / 2)
     radii = [math.hypot(*p) for p in fl.fillet + fl.involute]
-    assert all(b >= a - 1e-9 for a, b in zip(radii, radii[1:]))  # no undercut loop
+    assert all(b >= a - 1e-9 for a, b in zip(radii, radii[1:], strict=False))  # no undercut loop
 
 
 def test_derive_hits_centre_distance_with_profile_shift():

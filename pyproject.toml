@@ -47,6 +47,9 @@ target-version = "py311"
 select = ["E", "F", "W", "I", "B", "UP", "S307"]   # S307 = forbid eval()
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+"berkelium/cli.py" = ["E702"]
+
 [tool.mypy]
 python_version = "3.11"
 ignore_missing_imports = true

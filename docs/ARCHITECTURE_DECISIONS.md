@@ -83,3 +83,12 @@ strings with `* / ^`. pint may be used for I/O but is not a core dependency.
 **Decision (resolves U1).** `BERKELIUM-NEURAL-RENDERING-AND-SCIENCES` hosts core + datasets + training.
 The 105 zero-byte tool-named placeholder files were removed (no content); tools are now real dependencies
 in `pyproject.toml`. Docs moved to `docs/` with underscore names.
+
+### ADR-014 — Gear CEM scope decisions — Accepted (implementation)
+- 20° full-depth only in v0.1 (sourced rack + Lewis table). Undercut gears are rejected, not generated.
+- Profile-shift total from the KHK inverse calculation; split equally unless the pinion needs more (designer choice, recorded as an assumption).
+- Lewis only for x = 0, 12–400 teeth; otherwise `not_evaluated`. Contact ratio: fail < 1.0 (KHK), warn < 1.5 (Shigley §14-1). No unsourced thresholds.
+- Backlash = designer-chosen tooth thinning, not a standard.
+
+### ADR-015 — One spline definition for all backends — Accepted
+IR splines are chord-length natural cubics (dense point lists are curve samples). OCCT interpolates the same samples; Manifold uses them as a polyline. Lantern volumes agree within 0.04 %.

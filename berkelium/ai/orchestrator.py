@@ -16,7 +16,7 @@ from ..pipeline import run
 from ..schema.design import DesignProposal
 from ..schema.export import json_schema
 from .gateway import DecodingConfig, GatewayError, ModelProvider
-from .prompts import plan_messages, report_digest, repair_messages
+from .prompts import plan_messages, repair_messages, report_digest
 
 FORBIDDEN_KEYS = ("evaluation", "measurements", "validation", "simulation", "physically_validated")
 _FENCE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.S)
