@@ -130,7 +130,7 @@ class SpurGearPairCEM(CEM):
             assumptions.append("face width = 4 p, the middle of Shigley's 3p-5p guideline [SHI §14-1]")
         if best.x1 or best.x2:
             assumptions.append("total profile shift from the KHK inverse calculation, split equally between "
-                               "pinion and gear (designer choice)")
+                               "pinion and gear unless the pinion needs more to avoid undercut (designer choice)")
         if not req.module:
             assumptions.append("module = smallest candidate passing all checks (incl. Lewis when loads given)")
         derivs = [Derivation(id="z_min_no_undercut", target="pair", formula="2/sin^2(alpha)",
@@ -157,8 +157,12 @@ class SpurGearPairCEM(CEM):
             except ValueError:
                 continue
             if SHIFT_RANGE[0] <= xs <= SHIFT_RANGE[1]:
-                x = round(xs / 2.0, 12)
-                choices.append((abs(xs), err, z1, z2, x, xs - x))
+                # split: equal halves, but never below the pinion's no-undercut shift [KHK Eq. 3.10]
+                x1 = round(max(xs / 2.0, F.min_shift_no_undercut(z1, ALPHA)), 12)
+                x2 = xs - x1
+                if x2 < F.min_shift_no_undercut(z2, ALPHA):
+                    continue
+                choices.append((abs(xs), err, z1, z2, x1, x2))
         if not choices:
             return None
         choices.sort(key=lambda c: (c[0] > 1e-12, c[1], c[0], c[2]))
