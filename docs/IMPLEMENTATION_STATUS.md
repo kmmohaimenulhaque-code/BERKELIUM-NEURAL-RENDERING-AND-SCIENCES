@@ -1,7 +1,48 @@
 # Implementation status
 
-Branch `core/m1-foundation`. Everything below is implemented and tested on Linux (Python 3.12, CPU) unless marked.
+Branches: `main` (docs only) <- `core/m1-foundation` (M1, head 8a26f52) <- `physics/p1-numerical` (this milestone).
+Vocabulary: **implemented** (code exists) · **tested** (unit tests) · **analytically verified** (matches a closed-form
+oracle exactly) · **numerically verified** (true error measured against an exact solution and found inside the
+computed discretisation-error band) · **not_evaluated** · **unsupported** · **experimental**.
 
+## Model / data artefacts (state as of this branch)
+| Artefact | State |
+|---|---|
+| Qwen3-32B LoRA adapter | trained by the owner on MI300X; published at huggingface.co/Mhaquehaque/berkelium-qwen3-32b-lora (PEFT 0.21.2, base Qwen/Qwen3-32B). Model card is still the empty template: **no eval metrics or run manifest are published** |
+| Verified M1 dataset | published at huggingface.co/datasets/Mhaquehaque/berkelium-engineering-dataset (gear-only, manifest hash 29d0fb09... for seed 0 in the owner's run) |
+| Zero-shot vs LoRA comparison | **not recorded in the repo** — `out/eval/base.json` / `lora.json` must be committed or summarised before PHYSICS-9 |
+| Prompt drift | the plan prompt lists every registered CEM; registering `structure.cantilever_beam@0.1` changes it. Compare base vs LoRA on the SAME prompt version (re-run both), or the comparison is confounded |
+
+## Physics (PHYSICS-1..7)
+| Area | Module | Status |
+|---|---|---|
+| Physics schemas: Material, Region (level-set selector), 10 load/BC kinds, MeshSpec, SolverSpec, ConvergenceSpec, QoI, AnalysisCase; results: Estimate, ConvergenceStudy, MeshStats, SimProvenance, SimulationResult | `physics.schema` | implemented, tested (dimension checks, cross-reference checks) |
+| Semantic regions: facets selected by an implicit-field expression evaluated at facet VERTICES (mesher-independent) | `physics.mesh` | implemented, tested |
+| Meshing: structured tet box (exact nested refinement); Gmsh 4.15.2 **out of process** from OCCT STEP; quality metrics, mesh hashes, systematic size+curvature refinement | `physics.mesh` | implemented, tested |
+| Linear static elasticity (P1/P2 tets): fixed, prescribed displacement, traction, surface force (uniform, no point loads), pressure, body acceleration; displacement, von Mises (domain or surface), reactions; residual + discrete equilibrium per solve | `physics.solvers.fem` | **numerically verified** (Lame) + analytically verified (axial bar) |
+| Steady conduction (P1/P2): temperature, heat flux, convection, volumetric source; boundary heat flows, discrete heat balance | `physics.solvers.fem` | **numerically verified** (radial conduction) + analytically verified (slabs) |
+| Solution verification: Celik (2008) GCI with non-constant ratio, conservative order cap, per-QoI convergence status | `physics.verification` | tested on synthetic sequences; used by every numerical case |
+| Reduced-order pipe flow (Darcy-Weisbach; laminar exact; Colebrook with +-15 % model-form band; transitional = non_converged) | `physics.fluids` | analytically verified (laminar), tested (Colebrook) — **fidelity reduced_order, not CFD** |
+| CFD adapter protocol; OpenFOAM adapter | `physics.fluids` | interface only: always `unsupported` (detection only) |
+| L7: solution-verification results + three-valued requirement checks on error intervals (`sim.<case>.<qoi>`); `indeterminate` status; `physically_validated` schema-gated on L7 numerical evidence | `physics.l7`, `validation`, `schema.evaluation` | implemented, tested end-to-end |
+| Pipeline analyses stage: component -> OCCT -> STEP -> Gmsh -> FEM -> GCI -> L7 -> DesignRecord (+ VTU field artefact); records byte-reproducible | `pipeline` | implemented, tested |
+| Material library (4 entries, each cited; nominal class values) | `physics.materials` | implemented |
+| `structure.cantilever_beam@0.1` CEM (EB sizing from deflection + stress, slenderness check, default 3-D analysis case) | `cem.library.beam` | implemented, tested end-to-end |
+| CalculiX cross-check adapter, thermal-structural coupling, nozzle / pressure-vessel / heat-exchanger CEMs, physics dataset slice | — | **not started** |
+
+### Numerical evidence (finest level; reproduced by `tests/test_physics.py`, `tests/test_physics_pipeline.py`)
+| Case | Exact | Computed | True error | GCI band | Observed order |
+|---|---|---|---|---|---|
+| Radial conduction, tube 10/20/10 mm, P2, Gmsh 3 levels | Q = 453.236 W | 452.948 W | -0.064 % | +-0.352 W (covers) | 2.00 |
+| Lame plane strain, quarter tube, p = 10 MPa, P2, 3 levels r=1.5 | u_r(a) = 9.5333e-4 mm | 9.5224e-4 mm | -0.115 % | +-1.32e-6 mm (covers) | 2.13 |
+| same, surface-mean von Mises at r = a | 23.1325 MPa | 23.0775 MPa | -0.238 % | +-0.105 MPa (covers) | 1.35 |
+| Cantilever 100x10x10, structured P2, 3 levels | Timoshenko 0.20153 mm (model, not exact) | 0.19993 mm | -0.79 % vs model | +-2.3e-4 mm | 2.13 |
+| Axial bar / heated slab / convective slab | closed form | exact to 1e-12 | - | exact reproduction | - |
+| Laminar pipe | Hagen-Poiseuille | exact to 1e-12 | - | - | - |
+Domain-max von Mises at quadrature points converged in the Lame case (p = 1.80) but is a weak QoI: at re-entrant
+corners (clamped beam root) it is singular and the GCI study correctly reports `non_converged`.
+
+## M1 foundation
 | Area | Module | Status |
 |---|---|---|
 | Units, expression language (AST, Pratt parser, dimension-checked eval, NumPy/closure field compile, no eval) | `berkelium.units`, `berkelium.expr` | done, tested |

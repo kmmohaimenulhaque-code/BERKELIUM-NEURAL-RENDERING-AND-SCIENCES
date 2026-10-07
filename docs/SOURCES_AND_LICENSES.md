@@ -75,3 +75,21 @@ ISO 0.38 m rack tip radius, backlash formulas (backlash is a designer-chosen thi
 | manifold3d | 3.5.4 | Apache-2.0 | mesh, level sets |
 | trimesh | 5.1 | MIT | STL/GLB export |
 | numpy | 2.4 | BSD-3-Clause | numerics |
+
+## Physics stack (PHYSICS milestone, checked 2026-10-07)
+| Project | Version used/checked | License | Use | Reused or studied | Notes |
+|---|---|---|---|---|---|
+| scikit-fem | 12.0.2 (PyPI) | BSD-3-Clause | in-process FEM assembly | dependency (`[physics]` extra) | cite Gustafsson & McBain 2020, JOSS 5(52):2369 |
+| meshio | 5.3.5 | MIT | reads Gmsh .msh, writes VTU | dependency | |
+| SciPy | as installed | BSD-3-Clause | sparse direct / CG solves | dependency | |
+| Gmsh | 4.15.2 (executable) | GPL-2.0-or-later (with linking exceptions) | STEP -> tet mesh | **external process only**; never imported | ADR-016 |
+| CalculiX ccx | 2.21 (Debian/Ubuntu package) | GPL-2.0 | planned cross-check solver | not used yet; external process only | |
+| OpenFOAM | not installed / version not checked | GPL-3.0 | planned CFD | adapter detects executables only | |
+| FEniCSx (DOLFINx) | 0.11 (June 2026, fenicsproject.org) | LGPL-3.0 (DOLFINx), MIT (Basix) | candidate large-scale FEM | studied only | conda/apt/Docker install |
+
+### Formula / method references used by deterministic code
+Celik et al. 2008, J. Fluids Eng. 130(7):078001 (GCI procedure) · Roache 1994, J. Fluids Eng. 116:405-413 ·
+Colebrook 1939, J. Inst. Civil Eng. 11:133-156 · White, Fluid Mechanics (Darcy-Weisbach, Moody accuracy) ·
+Gere & Goodno, Mechanics of Materials (cantilever, flexure) · Cowper 1966 (shear coefficient, tests only) ·
+Budynas & Nisbett, Shigley's MED Table A-5 and Bergman et al., Fundamentals of Heat and Mass Transfer Table A.1
+(material library; nominal class values).

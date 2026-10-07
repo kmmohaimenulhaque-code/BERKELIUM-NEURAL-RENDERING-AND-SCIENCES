@@ -303,3 +303,18 @@ berkelium-core/
 
 ## 15. Unresolved questions
 See `ARCHITECTURE_DECISIONS.md` § Open decisions (U1–U9).
+
+## Physics layer (implemented on `physics/p1-numerical`; see ADR-016..018)
+```mermaid
+flowchart LR
+  P[DesignProposal\nspecification.analyses + materials\n(model-proposable inputs)] --> C[CEM derive/expand]
+  C --> G[OCCT BREP -> STEP]
+  G --> M[Gmsh process\nlevels h, h/r, h/r^2]
+  M --> R[Regions: level sets on vertices]
+  R --> S[scikit-fem solve\nresidual + balance]
+  S --> V[GCI per QoI -> Estimate +- band]
+  V --> L7[L7: solution verification +\n3-valued requirements]
+  L7 --> D[DesignRecord.evaluation.simulation\n(core-only) + VTU artefact]
+```
+The model may propose analysis cases (regions, loads, QoIs, mesh/convergence settings). It cannot write
+`evaluation`; the schema rejects it. `physically_validated` is derived and schema-gated.

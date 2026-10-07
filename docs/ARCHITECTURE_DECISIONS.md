@@ -92,3 +92,28 @@ in `pyproject.toml`. Docs moved to `docs/` with underscore names.
 
 ### ADR-015 — One spline definition for all backends — Accepted
 IR splines are chord-length natural cubics (dense point lists are curve samples). OCCT interpolates the same samples; Manifold uses them as a polyline. Lantern volumes agree within 0.04 %.
+
+### ADR-016 — Physics stack: scikit-fem in-process; Gmsh, CalculiX, OpenFOAM out of process — Accepted (implementation)
+**Context.** The core license is still undecided (ADR in SOURCES ledger). FEniCSx 0.11 (DOLFINx LGPL-3.0) is the
+strongest Python FEM but installs via conda/apt/Docker and pulls PETSc/MPI; Gmsh's Python module is a ctypes
+binding of a GPL-2.0-or-later library; CalculiX (GPL-2.0) and OpenFOAM (GPL-3.0) are executables.
+**Decision.** In-process FEM = scikit-fem (BSD-3, pure Python + SciPy). Gmsh, CalculiX, OpenFOAM are invoked only
+as separate executables over files; they are never imported. FEniCSx stays a candidate adapter for large/parallel
+problems (out of process or optional). **Consequences.** Licence-clean core; small direct solves (3 GB / 1 CPU
+handles ~10^5 dofs); scale-up path is an adapter, not a rewrite.
+
+### ADR-017 — Estimates, not numbers: error-carrying quantities and three-valued requirements — Accepted
+**Decision.** Every computed physical quantity is an `Estimate` (value, fidelity, status, discretisation error,
+model-form error, method). Numerical error bands come from a per-QoI Celik/Roache GCI study. L7 requirement checks
+evaluate the whole interval: pass / fail / **indeterminate**. A design is `physically_validated` only with passing
+L7 numerical evidence and no indeterminate/failed L7 results — enforced by the schema, not by convention.
+**Why.** It is the one mechanism shared by every domain (FEA, heat, CFD, reduced-order, analytic): it makes
+"how sure are we?" a typed, checkable, trainable object, and it gives the repair loop a third outcome
+("refine the mesh / add evidence") that pass/fail hides.
+
+### ADR-018 — Regions are level sets, evaluated on vertices — Accepted
+**Decision.** Boundary conditions attach to `Region`s defined by an implicit-field expression (the existing
+expression language, mm) over facet vertices and normals — never to mesher facet ids. **Why.** Works for any
+mesher/backend, survives remeshing and refinement (required for GCI), is model-proposable and diffable, and
+reuses the implicit-geometry convention (f <= 0 is inside). Vertices, not centroids, because centroids of curved
+faces sag inside the surface by ~h^2/8R (this broke the first radial-conduction run).
