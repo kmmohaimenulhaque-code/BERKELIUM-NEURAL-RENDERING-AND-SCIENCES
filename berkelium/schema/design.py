@@ -8,6 +8,7 @@ from pydantic import Field, field_validator, model_validator
 
 from ..geometry.ir import GeometryGraph
 from ..manufacturing import ManufacturingProfile
+from ..physics.schema import AnalysisCase, Material
 from .common import SCHEMA_VERSION, Id, QuantityModel, Ref, Strict
 
 ParamValue = QuantityModel | float | int | bool | str
@@ -91,6 +92,9 @@ class Specification(Strict):
     manufacturing: ManufacturingProfile | None = None
     parameters: list[Parameter] = Field(default_factory=list)
     constraints: list[Constraint] = Field(default_factory=list)
+    materials: list[Material] = Field(default_factory=list, description="Materials referenced by analyses")
+    analyses: list[AnalysisCase] = Field(default_factory=list,
+                                         description="Requested analyses (inputs only; results are core-written)")
 
     @model_validator(mode="after")
     def _unique(self) -> Specification:

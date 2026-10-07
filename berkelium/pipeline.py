@@ -179,6 +179,8 @@ def run(proposal: DesignProposal | dict | str, *, registry: CEMRegistry | None =
         except _ComponentFailed:
             continue
 
+    if prop.specification.analyses:
+        job.run("analyses", lambda: _run_analyses(prop, realize, bks, backend, artifacts, ev, results, realized))
     results += job.run("requirements", lambda: requirement_results(prop.specification.requirements, env, sources))
     results += job.run("constraints", lambda: constraint_results(prop.specification.constraints, env))
     ev.validation = summarize(results)
@@ -193,6 +195,46 @@ def run(proposal: DesignProposal | dict | str, *, registry: CEMRegistry | None =
 
 class _ComponentFailed(Exception):
     pass
+
+
+def _run_analyses(prop, realize, bks, backend, artifacts, ev, results, realized) -> None:
+    """Realise each analysed component through the exact-BREP backend, hand its STEP to the physics layer,
+    and record SimulationResults + L7 results. Nothing here is model-written."""
+    from .physics import l7
+    from .physics.run import run_case
+    from .physics.schema import SimulationResult
+    mats = {m.id: m for m in prop.specification.materials}
+    graphs = {rc.component: rc.geometry for rc in realized if rc.geometry is not None}
+    for c in prop.structure.components:
+        if c.kind == "procedural" and c.geometry is not None:
+            graphs.setdefault(c.id, c.geometry)
+    sink = (lambda data, ext: artifacts.put(data, ext)[0]) if artifacts else None
+    for case in prop.specification.analyses:
+        comp, _, body = case.target.partition(".")
+        step = sha = None
+        needs_geo = case.physics in ("structural_linear_static", "thermal_steady") and \
+            (case.mesh is None or case.mesh.generator == "gmsh")
+        if needs_geo:
+            if not realize or "occt" not in bks or comp not in graphs:
+                why = "realize=False" if not realize else ("no OCCT backend" if "occt" not in bks
+                                                           else f"no geometry for {comp!r}")
+                r = SimulationResult(case_id=case.id, physics=case.physics, target=case.target,
+                                     fidelity="not_evaluated", status="not_evaluated", message=f"not run: {why}")
+                ev.simulation.append(r)
+                results.extend(l7.case_results(r))
+                continue
+            be = bks["occt"]
+            g = graphs[comp]
+            g = g.resolve({}) if hasattr(g, "is_resolved") and not g.is_resolved() else g
+            real = be.execute(g)
+            shape = real.bodies[body] if body else next(iter(real.bodies.values()))
+            step = be.export(shape, "step")[0]
+            from .schema.hashing import sha256_bytes
+            sha = sha256_bytes(step)
+        r = run_case(case, mats, step=step, geometry_sha256=sha, sink=sink)
+        ev.simulation.append(r)
+        results.extend(l7.case_results(r))
+    results.extend(l7.requirement_results(prop.specification.requirements, ev.simulation))
 
 
 def _fail(results, level, target, msg, code, ev) -> None:
@@ -254,10 +296,11 @@ def _run_cem(comp: Component, reg, realize, bks, backend, artifacts, ev, results
     except ValueError as e:
         _fail(results, 3, comp.id, f"expand failed: {e}", "EXPAND_FAILED", ev)
     rc.geometry = geo.graph
+    analysed = any(a.target.partition(".")[0] == comp.id for a in prop.specification.analyses)
     for name, a in cem.analyses().items():
-        if a == "solver_required":
+        if a == "solver_required" and not analysed:
             results.append(ValidationResult(validator="simulation@0.1", level=7, status="not_evaluated",
-                                            target=comp.id, message=f"{name}: {a.replace('_', ' ')} (no solver adapter)",
+                                            target=comp.id, message=f"{name}: solver required; no analysis case requested",
                                             fidelity=Fidelity(kind="numerical")))
     if not realize:
         results.append(ValidationResult(validator="pipeline@0.1", level=3, status="not_evaluated", target=comp.id,

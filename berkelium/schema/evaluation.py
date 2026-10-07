@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
+from ..physics.schema import SimulationResult
 from .common import Diagnostic, Id, QuantityModel, Strict
 
-Status = Literal["pass", "fail", "warn", "not_evaluated", "error"]
+Status = Literal["pass", "fail", "warn", "indeterminate", "not_evaluated", "error"]
+# indeterminate: evaluated, but the evidence (an error interval) neither proves nor disproves the claim
 FidelityKind = Literal["rule", "geometric", "analytic", "numerical"]
 
 
@@ -37,8 +39,18 @@ class ValidationReport(Strict):
     summary: Status = "not_evaluated"
     counts: dict[str, int] = Field(default_factory=dict)
     highest_level_evaluated: int = -1
-    physically_validated: Literal[False] = Field(False, description="Only true with L7 numerical results; "
-                                                 "no solver adapters exist yet, so this is always false")
+    physically_validated: bool = Field(False, description="True only if at least one L7 NUMERICAL result passed "
+                                       "and no L7 result failed/errored/was indeterminate")
+
+    @model_validator(mode="after")
+    def _physically_validated_needs_evidence(self):
+        if self.physically_validated:
+            l7 = [r for r in self.results if r.level == 7]
+            if not any(r.status == "pass" and r.fidelity.kind == "numerical" for r in l7) or \
+                    any(r.status in ("fail", "error", "indeterminate") for r in l7):
+                raise ValueError("physically_validated=True requires a passing L7 numerical result and no "
+                                 "failed/errored/indeterminate L7 results")
+        return self
 
 
 class Measurement(Strict):
@@ -80,5 +92,6 @@ class Evaluation(Strict):
     measurements: list[Measurement] = Field(default_factory=list)
     artifacts: list[ArtifactRef] = Field(default_factory=list)
     validation: ValidationReport = Field(default_factory=ValidationReport)
-    simulation: list[dict] = Field(default_factory=list, description="Reserved for L7 solver results; empty")
+    simulation: list[SimulationResult] = Field(default_factory=list,
+                                               description="L7 solver results (deterministic core only)")
     diagnostics: list[Diagnostic] = Field(default_factory=list)

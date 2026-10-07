@@ -23,7 +23,8 @@ from typing import Annotated, Literal
 
 from pydantic import Field, model_validator
 
-from ..schema.common import Id, QuantityModel, Strict
+from .._base import Id, Strict
+from .._qmodel import QuantityModel
 from ..units import Quantity, check_dim
 
 PHYSICS_SCHEMA_VERSION = "0.1.0"
@@ -372,4 +373,6 @@ class SimulationResult(Strict):
     assumptions: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     provenance: SimProvenance | None = None
-    wall_seconds: float | None = Field(None, description="Informational; excluded from content hashes")
+    wall_seconds: float | None = Field(None, exclude=True,
+                                       description="Informational only; never serialised, so records stay "
+                                                   "byte-reproducible (stage timings live in the job log)")

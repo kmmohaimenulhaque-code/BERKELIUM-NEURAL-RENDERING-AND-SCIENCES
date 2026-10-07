@@ -58,6 +58,8 @@ def requirement_results(reqs: list[Requirement], env: Mapping[str, Any],
                         sources: Mapping[str, str]) -> list[ValidationResult]:
     out = []
     for r in reqs:
+        if r.quantity.startswith("sim."):
+            continue          # simulation quantities are judged at L7 on their error intervals
         key = f"{r.applies_to}.{r.quantity}" if r.applies_to and not r.quantity.startswith(r.applies_to + ".") \
             else r.quantity
         if key not in env:
@@ -124,14 +126,19 @@ def summarize(results: list[ValidationResult]) -> ValidationReport:
         summary = "error"
     elif counts.get("fail"):
         summary = "fail"
+    elif counts.get("indeterminate"):
+        summary = "indeterminate"
     elif counts.get("warn"):
         summary = "warn"
     elif counts.get("pass"):
         summary = "pass"
     else:
         summary = "not_evaluated"
-    evaluated = [r.level for r in results if r.status in ("pass", "fail", "warn")]
+    evaluated = [r.level for r in results if r.status in ("pass", "fail", "warn", "indeterminate")]
+    l7 = [r for r in results if r.level == 7 and r.status != "not_evaluated"]
+    phys = any(r.status == "pass" and r.fidelity.kind == "numerical" for r in l7) and \
+        not any(r.status in ("fail", "error", "indeterminate") for r in l7)
     return ValidationReport(results=results, summary=summary, counts=dict(sorted(counts.items())),  # type: ignore[arg-type]
-                            highest_level_evaluated=max(evaluated) if evaluated else -1)
+                            highest_level_evaluated=max(evaluated) if evaluated else -1, physically_validated=phys)
 
 

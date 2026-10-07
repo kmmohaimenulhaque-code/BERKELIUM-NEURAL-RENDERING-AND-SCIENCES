@@ -52,7 +52,7 @@ def _vtu(b: meshmod.MeshBundle, point_data: dict, cell_data: dict) -> bytes:
     m = meshio.Mesh(pts, cells, point_data=point_data, cell_data={k: [v] for k, v in cell_data.items()})
     with tempfile.TemporaryDirectory() as d:
         f = Path(d, "f.vtu")
-        meshio.write(f, m, binary=False)
+        meshio.write(f, m, binary=True, compression=None)
         return f.read_bytes()
 
 

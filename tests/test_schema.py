@@ -50,7 +50,7 @@ def test_relation_refs_checked():
         DesignProposal.model_validate(bad)
 
 
-def test_record_physically_validated_is_always_false():
+def test_record_physically_validated_requires_l7_evidence():
     with pytest.raises(ValidationError):
         DesignRecord.model_validate({"id": "x", "intent": {}, "specification": {}, "structure": MINIMAL["structure"],
                                      "provenance": {"author": "system"}, "proposal_hash": "0",

@@ -150,6 +150,8 @@ def default_registry() -> CEMRegistry:
         reg = CEMRegistry()
         from .library.gear.cem import SpurGearPairCEM
         reg.register(SpurGearPairCEM())
+        from .library.beam.cem import CantileverBeamCEM
+        reg.register(CantileverBeamCEM())
         reg.load_entry_points()
         _DEFAULT = reg
     return _DEFAULT
