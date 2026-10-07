@@ -22,7 +22,10 @@ occt = ["cadquery-ocp-novtk>=7.9"]          # exact BREP backend (OCCT is LGPL-2
 mesh = ["manifold3d>=3.5", "trimesh>=4"]   # mesh backend + STL/GLB export
 api = ["fastapi>=0.110", "uvicorn>=0.29"]
 model = ["httpx>=0.27"]                    # OpenAI-compatible providers (vLLM, Fireworks)
-train = ["torch", "transformers>=4.51", "peft", "trl", "accelerate", "datasets"]
+# torch is deliberately NOT listed: it must be the platform build (ROCm on MI300X) installed beforehand;
+# letting pip resolve it can replace the ROCm wheel with a CUDA/CPU one. vLLM lives in its own venv
+# (scripts/install_vllm_rocm.sh) because its wheel pins its own torch.
+train = ["transformers>=4.51", "peft>=0.13", "accelerate", "datasets", "pyyaml"]
 dev = ["httpx2", "pytest>=8", "hypothesis>=6", "ruff>=0.5", "mypy>=1.10"]
 
 [project.scripts]
