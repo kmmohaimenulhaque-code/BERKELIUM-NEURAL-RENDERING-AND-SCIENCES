@@ -1,0 +1,11 @@
+# AGENT-V2-DPO: preference optimisation on environment-labelled pairs, starting FROM the AGENT-V2 SFT adapter.
+model: Qwen/Qwen3-32B
+revision: main
+dtype: bfloat16
+attn_implementation: sdpa
+gradient_checkpointing: true
+max_length: 6144
+lora: {r: 32, alpha: 64, dropout: 0.05, target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+dpo: {pairs: out/agent_v2/pairs.jsonl, init_adapter: training/runs/qwen3-32b-lora-agent-v2, beta: 0.1,
+      learning_rate: 5.0e-6, epochs: 1, gradient_accumulation_steps: 8, seed: 0}
+output_dir: training/runs/qwen3-32b-lora-agent-v2-dpo

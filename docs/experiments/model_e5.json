@@ -1,0 +1,123 @@
+{
+  "tasks": 68,
+  "truth": {
+    "determined": 44,
+    "underdetermined": 8,
+    "contradictory": 8,
+    "outside_validity": 4,
+    "ambiguous": 4
+  },
+  "splits": {
+    "train": 40,
+    "heldout": 28
+  },
+  "constructor": {
+    "by_split": {
+      "train": {
+        "correct": 40
+      },
+      "heldout": {
+        "correct": 28
+      }
+    },
+    "by_domain_status": {
+      "fluids|determined": {
+        "correct": 8
+      },
+      "fluids|outside_validity": {
+        "correct": 4
+      },
+      "gas_dynamics|ambiguous": {
+        "correct": 4
+      },
+      "gas_dynamics|determined": {
+        "correct": 8
+      },
+      "heat|determined": {
+        "correct": 4
+      },
+      "heat|underdetermined": {
+        "correct": 4
+      },
+      "rocket|determined": {
+        "correct": 4
+      },
+      "structures|contradictory": {
+        "correct": 4
+      },
+      "structures|determined": {
+        "correct": 12
+      },
+      "structures|underdetermined": {
+        "correct": 4
+      },
+      "vessel|contradictory": {
+        "correct": 4
+      },
+      "vessel|determined": {
+        "correct": 8
+      }
+    },
+    "mean_return": {
+      "train": 0.8960000000000001,
+      "heldout": 0.8685714285714287
+    }
+  },
+  "greedy_retrieval": {
+    "by_split": {
+      "train": {
+        "correct": 12,
+        "wrong": 28
+      },
+      "heldout": {
+        "correct": 16,
+        "wrong": 12
+      }
+    },
+    "by_domain_status": {
+      "fluids|determined": {
+        "wrong": 8
+      },
+      "fluids|outside_validity": {
+        "wrong": 4
+      },
+      "gas_dynamics|ambiguous": {
+        "correct": 4
+      },
+      "gas_dynamics|determined": {
+        "correct": 4,
+        "wrong": 4
+      },
+      "heat|determined": {
+        "correct": 4
+      },
+      "heat|underdetermined": {
+        "correct": 4
+      },
+      "rocket|determined": {
+        "wrong": 4
+      },
+      "structures|contradictory": {
+        "wrong": 4
+      },
+      "structures|determined": {
+        "correct": 4,
+        "wrong": 8
+      },
+      "structures|underdetermined": {
+        "wrong": 4
+      },
+      "vessel|contradictory": {
+        "wrong": 4
+      },
+      "vessel|determined": {
+        "correct": 8
+      }
+    },
+    "mean_return": {
+      "train": -1.2060000000000002,
+      "heldout": -0.36571428571428577
+    }
+  },
+  "seconds": 19.9
+}
