@@ -8,7 +8,13 @@ dist/
 .mypy_cache/
 .ruff_cache/
 # generated data and artifacts never go into git — manifests do
-/out/
+/out/*
+# evaluation REPORTS are evidence and are committed; bulky trajectories and server logs are not
+!/out/eval/
+/out/eval/*.trajectories.jsonl
+/out/eval/logs/
+# downloaded adapters / models (GBs)
+/models/
 /artifacts/
 /datasets/generated/
 /training/runs/

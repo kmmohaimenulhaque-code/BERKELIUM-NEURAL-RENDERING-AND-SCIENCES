@@ -42,6 +42,14 @@ computed discretisation-error band) · **not_evaluated** · **unsupported** · *
 Domain-max von Mises at quadrature points converged in the Lame case (p = 1.80) but is a weak QoI: at re-entrant
 corners (clamped beam root) it is singular and the GCI study correctly reports `non_converged`.
 
+## Evaluation runtime (ADR-025)
+| Area | Module | Status |
+|---|---|---|
+| In-process multi-adapter provider (transformers + PEFT) | `berkelium.ai.local_provider` | implemented, tested on CPU with Qwen3-0.6B + LoRA (opt-in test) |
+| Lockstep batched runner (ClaimEnv, ModelEnv), resume | `berkelium.agent.batch_runner`, `scripts/eval_generations.py` | implemented, tested (== sequential runner) |
+| Visible / fail-fast server waiting; multi-adapter vLLM serving with computed rank | `berkelium.ai.waiting`, `scripts/serve_vllm.sh` | implemented, tested |
+| Evaluation of BASE/M1/AGENT-V1/AGENT-V2/AGENT-V2-DPO on MI300X | — | **NOT RUN YET** (no `out/eval` committed) |
+
 ## Model synthesis + training loop (ADR-023/024) — experimental
 | Area | Module | Status |
 |---|---|---|

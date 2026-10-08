@@ -125,20 +125,24 @@ class OpenAICompatibleProvider:
             raise GatewayError(f"{self.name}: {type(e).__name__}: {e} ({self.base_url})") from None
         return [m.get("id", "") for m in data.get("data", [])]
 
-    def check(self, wait_s: float = 0.0, interval_s: float = 10.0) -> list[str]:
-        """Raise GatewayError unless the endpoint is up AND serves self.model. Optionally poll up to wait_s."""
+    def check(self, wait_s: float = 0.0, interval_s: float = 10.0, on_wait=None) -> list[str]:
+        """Raise GatewayError unless the endpoint is up AND serves self.model. Optionally poll up to wait_s.
+        ``on_wait(elapsed_s, error)`` is called after every failed poll (progress output / fail-fast; it may raise)."""
         if os.environ.get("BERKELIUM_SKIP_MODEL_CHECK") == "1":   # hosted APIs that don't list models
             return [self.model]
-        deadline = time.monotonic() + wait_s
+        start = time.monotonic()
+        deadline = start + wait_s
         while True:
             try:
                 ids = self.served_models()
                 if self.model not in ids:
                     raise GatewayError(f"{self.name}: endpoint up but does not serve {self.model!r}; serves {ids}")
                 return ids
-            except GatewayError:
+            except GatewayError as e:
                 if time.monotonic() >= deadline:
                     raise
+                if on_wait is not None:
+                    on_wait(time.monotonic() - start, e)
                 time.sleep(interval_s)
 
 

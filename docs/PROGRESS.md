@@ -14,7 +14,8 @@ Read this first, then docs/AGI_ENGINEERING.md, docs/IMPLEMENTATION_STATUS.md, do
 
 | 4fd24fa, c56b37e (owner) | MI300X setup script; AGENT-V1/V2 datasets (byte-identical to rebuild) | out/agent*/manifest.json |
 | HF (owner, 2026-10-07/08) | M1, AGENT-V1, AGENT-V2, AGENT-V2-DPO adapters; lineage verified | docs/manifests/model_generations.json |
-| (this commit) | Endgame audit | docs/ENDGAME_AUDIT.md |
+| 5c13f83 | Endgame audit | docs/ENDGAME_AUDIT.md |
+| (this commit) | ADR-025 evaluation runtime: one command evaluates all generations, no server, resume, fail-fast | docs/MI300X_ENDGAME_RUNBOOK.md step 2 |
 
 ## Open items (in order) — superseded by docs/ENDGAME_AUDIT.md section 7
 1. MI300X: run docs/MI300X_ENDGAME_RUNBOOK.md steps 0-7; commit eval JSONs + run manifests.

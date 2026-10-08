@@ -21,6 +21,8 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("sft-render"); s.add_argument("--dataset", required=True); s.add_argument("--out", required=True)
     s = sub.add_parser("model-check", help="verify BERKELIUM_MODEL_URL is up and serves BERKELIUM_MODEL")
     s.add_argument("--wait", type=float, default=0.0, help="seconds to keep polling (vLLM load takes minutes)")
+    s.add_argument("--pidfile", default="out/logs/vllm.pid", help="abort at once if this server process dies")
+    s.add_argument("--log", default=None, help="server log to show while waiting / on failure")
     s = sub.add_parser("eval"); s.add_argument("--dataset", required=True)
     s.add_argument("--wait", type=float, default=0.0, help="seconds to wait for the endpoint before starting")
     s.add_argument("--splits", default="test,heldout_family"); s.add_argument("--max-repairs", type=int, default=2)
@@ -65,7 +67,11 @@ def main(argv: list[str] | None = None) -> int:
         try:
             prov = provider_from_env()
             if a.cmd != "design":
-                ids = prov.check(wait_s=getattr(a, "wait", 0.0))
+                waiter = None
+                if getattr(a, "wait", 0.0):
+                    from .ai.waiting import make_waiter
+                    waiter = make_waiter(prov.base_url, getattr(a, "pidfile", None), getattr(a, "log", None))
+                ids = prov.check(wait_s=getattr(a, "wait", 0.0), on_wait=waiter)
                 print(f"endpoint ok: {prov.base_url} serves {ids}", file=sys.stderr)
         except GatewayError as e:
             print(f"model endpoint not ready: {e}", file=sys.stderr)

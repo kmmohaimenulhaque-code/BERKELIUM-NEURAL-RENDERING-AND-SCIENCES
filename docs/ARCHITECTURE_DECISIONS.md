@@ -263,3 +263,26 @@ instances of failing TRAIN families only.
 reward margin 0 -> 7.49, preference accuracy 1.0; adapter + manifest saved. Failure analysis on greedy E5 episodes:
 40 failures -> context_violation 12, ignored_closure 8, wrong_status 20; weights up to 4x on failing families.
 **Not yet executed.** Any 32B training or LLM evaluation (requires the MI300X; see docs/MI300X_ENDGAME_RUNBOOK.md).
+
+### ADR-025 — Evaluation runtime: in-process multi-adapter provider, lockstep batching, visible fail-fast waits — Accepted
+**Problem (observed on the MI300X).** Runbook steps 2/5 appeared to hang: `model-check --wait 1800` polled silently;
+`serve_vllm.sh` hard-coded `--max-lora-rank 16` (AGENT-V2/DPO are r=32 -> vLLM refuses them and exits) and required
+adapters as local `training/runs/*` dirs (exit 2 when absent) — both looked identical to a slow load for 30 min;
+evals ran one request at a time with up to 4096 tokens at temperature 0.7 and printed nothing until the end; Ctrl+C
+left the backgrounded server holding ~90 % of VRAM.
+**Decision.** (1) `berkelium.ai.local_provider.LocalHFProvider`: transformers + PEFT, base loaded once, all adapters
+loaded and switched in place, batched greedy decoding, prompt rendering identical to training (chat template,
+enable_thinking=False), OOM -> split batch. Default backend: no server at all. (2) `berkelium.agent.batch_runner`:
+lockstep batched episodes for ClaimEnv/ModelEnv, field-for-field identical to the sequential runners (tested),
+per-episode persistence and progress/ETA callbacks. (3) `berkelium.ai.waiting` + `check(on_wait=...)`: status every
+30 s, immediate abort with the log tail when the server PID dies. (4) `serve_vllm.sh`: N adapters in ONE server,
+`--max-lora-rank` computed from the adapters, HF repo ids downloaded, pidfile. (5) `scripts/eval_generations.py`: one
+command for all generations x suites, resume, manifest (adapter repo SHAs, ranks, decoding, task ids, env), summary.
+**Evidence (CPU, Qwen3-0.6B stand-in).** Batched == sequential episodes on 12 ClaimEnv + 10 ModelEnv tasks; resume after
+an interrupt completes with no duplicates; a dead-server pidfile aborts `check()` in < 5 s instead of waiting;
+serve script emits `--max-lora-rank 32 --max-loras 2` for r=16 + r=32 adapters; base vs random-LoRA outputs differ
+and switching back to base reproduces the base output exactly; the full command ran end-to-end (3 generations,
+smoke) and resumed in 7 s. The planning suite scores replayed gold proposals at 1.0 (scorer sanity).
+**Limits.** Batched greedy decoding is not guaranteed bit-identical across batch compositions (batch size is recorded);
+the local backend has no grammar-constrained decoding (planning suite reports `constrained_decoding: false`); no
+measured MI300X throughput yet.
