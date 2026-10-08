@@ -1,0 +1,43 @@
+{
+  "dataset": "AGENT-V2",
+  "env": "modelenv-r1",
+  "seed": 1,
+  "n_per": 12,
+  "train_domains": [
+    "fluids",
+    "heat",
+    "structures"
+  ],
+  "heldout_domains": "vessel, gas_dynamics, rocket (never included)",
+  "sft_train": 906,
+  "sft_val": 165,
+  "pairs": 204,
+  "modelenv_rows": {
+    "sft_train": 520,
+    "sft_val": 104,
+    "pairs": 84
+  },
+  "split_policy": "modelenv: instance % 6 == 0 -> val (episode-level); claimenv: as in merged manifest",
+  "merged_from": {
+    "source": "docs/experiments/trajectories_e4.jsonl",
+    "source_sha256": "314c9bea7df782079354c7e2698773e612e9bc292368bd7955f6fd8e885738e8",
+    "families": [
+      "train"
+    ],
+    "sft_train": 386,
+    "sft_val": 61,
+    "pairs": 120,
+    "heldout_family": "heldout (every nu not in {0.2, 0.4})",
+    "files": {
+      "train.chat.jsonl": "be8c845ca914eb7426d6849ab300a36d3b7a99fd58236d19d93ecdaf0fe26514",
+      "val.chat.jsonl": "5bb7d158a54087e974a89f949c2c40cfc820810b815ef3568ffedaa6372c06af",
+      "pairs.jsonl": "7cd6bbe35af7aa5e3ebd227e0212fc03295a76a3a23b3b720e823131911c1464"
+    }
+  },
+  "curriculum": null,
+  "files": {
+    "train.chat.jsonl": "a80ba9c2e4cee79dca3b51381e01d8b0c499d27c9c59c57e37ac8256acb6631a",
+    "val.chat.jsonl": "99a0a634df8730e94e4d4886aa8b911dd1fc104e4a0a4864cb6516159197d92a",
+    "pairs.jsonl": "82f173ecbd18b9d9bab3d83d8c85e3630da9f8925e9127c0ba4d7a1518ef1adb"
+  }
+}

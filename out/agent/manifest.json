@@ -1,0 +1,16 @@
+{
+  "source": "docs/experiments/trajectories_e4.jsonl",
+  "source_sha256": "314c9bea7df782079354c7e2698773e612e9bc292368bd7955f6fd8e885738e8",
+  "families": [
+    "train"
+  ],
+  "sft_train": 386,
+  "sft_val": 61,
+  "pairs": 120,
+  "heldout_family": "heldout (every nu not in {0.2, 0.4})",
+  "files": {
+    "train.chat.jsonl": "be8c845ca914eb7426d6849ab300a36d3b7a99fd58236d19d93ecdaf0fe26514",
+    "val.chat.jsonl": "5bb7d158a54087e974a89f949c2c40cfc820810b815ef3568ffedaa6372c06af",
+    "pairs.jsonl": "7cd6bbe35af7aa5e3ebd227e0212fc03295a76a3a23b3b720e823131911c1464"
+  }
+}
