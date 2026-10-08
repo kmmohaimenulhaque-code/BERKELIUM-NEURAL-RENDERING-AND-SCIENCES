@@ -40,6 +40,7 @@ def main():
     ap.add_argument("--pairs", default=None)
     ap.add_argument("--max-steps", type=int, default=None)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--accum", type=int, default=None, help="override gradient_accumulation_steps (dry runs)")
     ap.add_argument("--min-free-gb", type=float, default=120.0)
     a = ap.parse_args()
     import torch
@@ -76,7 +77,7 @@ def main():
                 ref.append((float(seq_logp(model, *t(c))), float(seq_logp(model, *t(r)))))
     model.train()
     opt = torch.optim.AdamW([q for q in model.parameters() if q.requires_grad], lr=d["learning_rate"])
-    beta, accum = d["beta"], d.get("gradient_accumulation_steps", 1)
+    beta, accum = d["beta"], a.accum or d.get("gradient_accumulation_steps", 1)
     steps = a.max_steps or d["epochs"] * max(1, len(enc) // accum)
     log, i = [], 0
     for step in range(steps):
@@ -89,13 +90,13 @@ def main():
             z = beta * ((pc - pr) - (rc - rr))
             loss = -torch.nn.functional.logsigmoid(z).mean() / accum
             loss.backward()
-            tot += float(loss) * accum
-            margin += float(z) / beta
-            acc += int(float(z) > 0)
+            tot += float(loss.detach()) * accum
+            margin += float(z.detach()) / beta
+            acc += int(float(z.detach()) > 0)
         opt.step()
         opt.zero_grad()
         log.append({"step": step, "loss": tot / accum, "reward_margin": margin / accum, "pref_acc": acc / accum})
-        print(json.dumps(log[-1]))
+        print(json.dumps(log[-1]), flush=True)
     out = Path(a.out or cfg["output_dir"])
     out.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(out)

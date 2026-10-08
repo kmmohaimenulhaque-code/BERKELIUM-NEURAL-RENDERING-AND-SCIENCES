@@ -230,3 +230,36 @@ observation, and trajectories were regenerated. (2) The first family split was l
 Families are now: train = nu in {0.2, 0.4}; heldout = every other nu. Training data (SFT 386 train / 61 val, 120
 preference pairs) comes only from the train family, built by `scripts/agent_build_training.py`; the LLM evaluation
 runner is `scripts/agent_llm_eval.py`; procedure in `docs/MI300X_AGENT_RUNBOOK.md`. No LLM result exists yet.
+
+### ADR-023 — Model synthesis: the agent builds the model from a context-tagged relation library — Accepted (experimental)
+**Hypothesis.** Retrieval of a pre-written formula is not engineering; constructing the model is. If knowledge is a
+library of acausal relations tagged with the context they presuppose, a domain-free search can assemble, verify and
+diagnose models — and an environment can require an agent to do the same through actions.
+**Prior art.** Compositional modelling (Falkenhainer & Forbus, Artificial Intelligence 51, 1991): model fragments +
+assumptions. Berkelium adds dimension-checked quarantine, acausal solving, validity at the solution, model-form
+bounds, hypothesis competition, and a grounding-required reward.
+**Design.** `berkelium.synthesis` (library with deliberate hard negatives; backward-chaining constructor; verification
+via `laws.solve`; definition-only closure check; competition of valid alternatives within their bounds) and
+`berkelium.agent.model_env` (actions search/add/remove/solve/declare; reward modelenv-r1). Benchmark E5 references are
+explicit relation sets per scenario, independent of the constructor.
+**Evidence (E5, 68 tasks, seed 0).** Constructor 68/68 grounded-correct (train 40/40, held-out domains 28/28 incl. a
+12-relation rocket chamber), 0 wrong. Greedy first-match retrieval 28/68, wrong on 40 (context violations,
+ignored closure, wrong regime). Two judge/agent bugs were found by the environment and fixed (domain-limited
+identities enforced outside their domain; abstention without a supporting solve).
+**Limitations.** Constructor and references share one library: E5 tests selection, assembly and diagnosis, not the
+truth of fragments (covered by E1/E2 + FEM). Search is exhaustive-with-caps (combinatorial for large libraries).
+Fragments are human-authored; the LLM is not yet measured in ModelEnv.
+
+### ADR-024 — Generational training loop: environment-verified data, own DPO, failure-driven curriculum — Accepted
+**Design.** Generations BASE -> M1 -> AGENT-V1 (ClaimEnv SFT) -> AGENT-V2 (+ModelEnv SFT) -> AGENT-V2-DPO -> V3...
+each a new adapter directory with a run manifest. Data builders refuse unverified rows, assert held-out domains are
+absent and episodes are never split, and record lineage (source hashes, seeds, merged manifests). The benchmark uses
+seed 0; training data seeds >= 1. `training/dpo_lora.py` implements DPO (Rafailov et al. 2023) directly on
+transformers+PEFT with a frozen, precomputed reference. `scripts/failure_analysis.py` assigns each failed episode a
+mechanistic failure mode (invalid action, context violation, ignored validity/closure, declared without solve,
+wrong status/value, budget) and emits oversampling weights; `model_build_training.py --curriculum` adds fresh-seed
+instances of failing TRAIN families only.
+**Evidence.** DPO CPU dry run (Qwen3-0.6B, 2 pairs, 6 steps): loss 0.6931 (= ln 2 at policy = reference) -> 0.387,
+reward margin 0 -> 7.49, preference accuracy 1.0; adapter + manifest saved. Failure analysis on greedy E5 episodes:
+40 failures -> context_violation 12, ignored_closure 8, wrong_status 20; weights up to 4x on failing families.
+**Not yet executed.** Any 32B training or LLM evaluation (requires the MI300X; see docs/MI300X_ENDGAME_RUNBOOK.md).

@@ -42,6 +42,16 @@ computed discretisation-error band) · **not_evaluated** · **unsupported** · *
 Domain-max von Mises at quadrature points converged in the Lame case (p = 1.80) but is a weak QoI: at re-entrant
 corners (clamped beam root) it is singular and the GCI study correctly reports `non_converged`.
 
+## Model synthesis + training loop (ADR-023/024) — experimental
+| Area | Module | Status |
+|---|---|---|
+| Context-tagged relation library (31 fragments, hard negatives, quarantine) + constructor | `berkelium.synthesis` | implemented, tested |
+| ModelEnv, constructor/greedy/LLM policies, E5 benchmark (independent references) | `berkelium.agent.model_*` | implemented, tested; E5 run (68/68 vs 28/68) |
+| AGENT-V2 data (906 SFT train / 165 val / 204 pairs), lineage manifests | `scripts/model_build_training.py` | built, verified |
+| DPO trainer | `training/dpo_lora.py` | **CPU dry-run verified**; 32B run NOT executed |
+| LLM eval on ModelEnv, failure analysis -> curriculum | `scripts/model_llm_eval.py`, `scripts/failure_analysis.py` | implemented, tested (replay provider); real LLM NOT evaluated |
+| Environment manifest | `scripts/env_manifest.py` | implemented; sandbox manifest committed, MI300X manifest pending |
+
 ## Agentic environment (ADR-022) — experimental
 | Area | Module | Status |
 |---|---|---|

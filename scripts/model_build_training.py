@@ -33,8 +33,17 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=1)          # seed 0 is the E5 benchmark; training uses others
     ap.add_argument("--n-per", type=int, default=12)
     ap.add_argument("--merge", default=None, help="AGENT-V1 ClaimEnv data dir to merge (its manifest is recorded)")
+    ap.add_argument("--curriculum", default=None, help="failure_analysis.py spec: oversample failing families")
     a = ap.parse_args(argv)
     T = [t for t in tasks(a.n_per, seed=a.seed) if t.domain in TRAIN_DOMAINS]
+    curriculum = json.loads(Path(a.curriculum).read_text()) if a.curriculum else None
+    if curriculum:   # extra fresh instances (new seeds) of the families the evaluated model fails on
+        w = curriculum["oversample"]
+        for k in range(1, max(w.values(), default=1)):
+            fam_, inst_ = lambda t: t.id.split("#")[0], lambda t: int(t.id.split("#")[1])  # noqa: E731
+            T += [t.__class__(**{**t.__dict__, "id": f"{fam_(t)}#{1000 * k + inst_(t)}"})
+                  for t in tasks(a.n_per, seed=a.seed + 1000 * k)
+                  if t.domain in TRAIN_DOMAINS and w.get(fam_(t), 1) > k]
     act = lambda x: json.dumps(x, sort_keys=True)  # noqa: E731
     sft, seen, pairs = [], set(), []
     fam = lambda tid: tid.split("#")[0]  # noqa: E731
@@ -82,7 +91,8 @@ def main(argv=None):
            "sft_train": len(train), "sft_val": len(val), "pairs": len(pairs),
            "modelenv_rows": {"sft_train": n_model[0], "sft_val": n_model[1], "pairs": n_model[2]},
            "split_policy": "modelenv: instance % 6 == 0 -> val (episode-level); claimenv: as in merged manifest",
-           "merged_from": merged,
+           "merged_from": merged, "curriculum": curriculum and {"source": a.curriculum,
+                                                                  "oversample": curriculum["oversample"]},
            "files": {n: sha(out / n) for n in ("train.chat.jsonl", "val.chat.jsonl", "pairs.jsonl")}}
     (out / "manifest.json").write_text(json.dumps(man, indent=2) + "\n")
     print(json.dumps({k: v for k, v in man.items() if k not in ("files", "merged_from")}))
