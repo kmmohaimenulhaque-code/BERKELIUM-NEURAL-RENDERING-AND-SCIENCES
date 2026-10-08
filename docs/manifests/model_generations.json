@@ -1,0 +1,210 @@
+{
+  "M1": {
+    "hf_repo": "Mhaquehaque/berkelium-qwen3-32b-lora",
+    "base": "Qwen/Qwen3-32B",
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "target_modules": [
+      "down_proj",
+      "gate_proj",
+      "k_proj",
+      "o_proj",
+      "q_proj",
+      "up_proj",
+      "v_proj"
+    ],
+    "config_sha256": "5ba122d4d96f9448a051aecfa750803b9babd89afbc3470c7a9f6a8f331d9dc6",
+    "train_sha256": "c947c690562126c0045ac49af223ebca08ba8f79c5e3934b9b4df38f59144ec9",
+    "val_sha256": "15e2472259a2d848d81e28c34f08efbf9a632cb26570f3b97ac3e62a733e0acd",
+    "train_stats": {
+      "rows": 574,
+      "truncated": 0,
+      "max_tokens": 791
+    },
+    "val_stats": {
+      "rows": 50,
+      "truncated": 0,
+      "max_tokens": 800
+    },
+    "final_eval": {
+      "eval_loss": 0.06919679790735245,
+      "eval_runtime": 7.4896,
+      "eval_samples_per_second": 6.676,
+      "eval_steps_per_second": 6.676,
+      "epoch": 2.0
+    },
+    "gpu": {
+      "device": "AMD Instinct MI300X VF",
+      "free_gb": 191.4,
+      "total_gb": 191.7,
+      "count": 1
+    },
+    "versions": {
+      "torch": "2.10.0+rocm7.14.0",
+      "hip": "7.14.60850",
+      "transformers": "5.19.0",
+      "peft": "0.21.2"
+    },
+    "eval_loss_curve": [
+      0.07135,
+      0.0692,
+      0.0692
+    ],
+    "dpo_last": null
+  },
+  "AGENT-V1": {
+    "hf_repo": "Mhaquehaque/berkelium-qwen3-32b-agent-v1",
+    "base": "Qwen/Qwen3-32B",
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "target_modules": [
+      "down_proj",
+      "gate_proj",
+      "k_proj",
+      "o_proj",
+      "q_proj",
+      "up_proj",
+      "v_proj"
+    ],
+    "config_sha256": "6d4aa4a3bff82f9e499be7abfe2b03bdadd5309836e0520accbc469b685e75c3",
+    "train_sha256": "be8c845ca914eb7426d6849ab300a36d3b7a99fd58236d19d93ecdaf0fe26514",
+    "val_sha256": "5bb7d158a54087e974a89f949c2c40cfc820810b815ef3568ffedaa6372c06af",
+    "train_stats": {
+      "rows": 386,
+      "truncated": 0,
+      "max_tokens": 889
+    },
+    "val_stats": {
+      "rows": 61,
+      "truncated": 0,
+      "max_tokens": 886
+    },
+    "final_eval": {
+      "eval_loss": 0.009967361576855183,
+      "eval_runtime": 10.3762,
+      "eval_samples_per_second": 5.879,
+      "eval_steps_per_second": 5.879,
+      "epoch": 3.0
+    },
+    "gpu": {
+      "device": "AMD Radeon Graphics",
+      "free_gb": 191.4,
+      "total_gb": 191.7,
+      "count": 1
+    },
+    "versions": {
+      "torch": "2.10.0+rocm7.0",
+      "hip": "7.0.51831",
+      "transformers": "5.19.0",
+      "peft": "0.21.2"
+    },
+    "eval_loss_curve": [
+      0.01839,
+      0.01255,
+      0.01182,
+      0.01265,
+      0.00993,
+      0.00997,
+      0.00997
+    ],
+    "dpo_last": null
+  },
+  "AGENT-V2": {
+    "hf_repo": "Mhaquehaque/berkelium-qwen3-32b-agent-v2",
+    "base": "Qwen/Qwen3-32B",
+    "lora_r": 32,
+    "lora_alpha": 64,
+    "target_modules": [
+      "down_proj",
+      "gate_proj",
+      "k_proj",
+      "o_proj",
+      "q_proj",
+      "up_proj",
+      "v_proj"
+    ],
+    "config_sha256": "bb5292f25d9c4699f544703c6477fc29a8a580835e750930557a383783df495e",
+    "train_sha256": "a80ba9c2e4cee79dca3b51381e01d8b0c499d27c9c59c57e37ac8256acb6631a",
+    "val_sha256": "99a0a634df8730e94e4d4886aa8b911dd1fc104e4a0a4864cb6516159197d92a",
+    "train_stats": {
+      "rows": 906,
+      "truncated": 0,
+      "max_tokens": 889
+    },
+    "val_stats": {
+      "rows": 165,
+      "truncated": 0,
+      "max_tokens": 886
+    },
+    "final_eval": {
+      "eval_loss": 0.0022110515274107456,
+      "eval_runtime": 25.3271,
+      "eval_samples_per_second": 6.515,
+      "eval_steps_per_second": 6.515,
+      "epoch": 3.0
+    },
+    "gpu": {
+      "device": "AMD Radeon Graphics",
+      "free_gb": 191.4,
+      "total_gb": 191.7,
+      "count": 1
+    },
+    "versions": {
+      "torch": "2.10.0+rocm7.0",
+      "hip": "7.0.51831",
+      "transformers": "5.19.0",
+      "peft": "0.21.2"
+    },
+    "eval_loss_curve": [
+      0.03644,
+      0.01608,
+      0.01881,
+      0.00635,
+      0.00319,
+      0.00216,
+      0.00221,
+      0.00221
+    ],
+    "dpo_last": null
+  },
+  "AGENT-V2-DPO": {
+    "hf_repo": "Mhaquehaque/berkelium-qwen3-32b-agent-v2-dpo",
+    "base": "Qwen/Qwen3-32B",
+    "lora_r": 32,
+    "lora_alpha": 64,
+    "target_modules": [
+      "down_proj",
+      "gate_proj",
+      "k_proj",
+      "o_proj",
+      "q_proj",
+      "up_proj",
+      "v_proj"
+    ],
+    "method": "DPO (own implementation, frozen precomputed reference)",
+    "init_adapter": "training/runs/qwen3-32b-lora-agent-v2",
+    "config_sha256": "06292e3572189d3099819c9dd8cfb084c2c68c60ae472b162b38e58f9b1d305a",
+    "pairs_sha256": "82f173ecbd18b9d9bab3d83d8c85e3630da9f8925e9127c0ba4d7a1518ef1adb",
+    "beta": 0.1,
+    "steps": 25,
+    "pairs_used": 204,
+    "gpu": {
+      "device": "AMD Radeon Graphics",
+      "free_gb": 191.4,
+      "total_gb": 191.7,
+      "count": 1
+    },
+    "versions": {
+      "torch": "2.10.0+rocm7.0",
+      "transformers": "5.19.0",
+      "peft": "0.21.2"
+    },
+    "eval_loss_curve": [],
+    "dpo_last": {
+      "step": 24,
+      "loss": 0.13666079379618168,
+      "reward_margin": 19.217133820056915,
+      "pref_acc": 1.0
+    }
+  }
+}
